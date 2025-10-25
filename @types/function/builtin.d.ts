@@ -25,7 +25,6 @@ declare const builtin: {
   duringGenerating: () => boolean;
   getImageTokenCost: (data_url: string, quality: 'low' | 'auto' | 'high') => Promise<number>;
   getVideoTokenCost: (data_url: string) => Promise<number>;
-  parseRegexFromString: (regex: string) => RegExp | null;
   promptManager: {
     messages: Array<{
       collection: Array<{
@@ -75,5 +74,4 @@ declare const builtin: {
   /** 刷新预设提示词列表 (防抖) */
   renderPromptManagerDebounced: (after_try_generate?: boolean) => void;
   saveSettings: () => Promise<void>;
-  uuidv4: () => string;
 };

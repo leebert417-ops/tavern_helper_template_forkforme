@@ -667,15 +667,19 @@ button:active,
   font-size: 13px;
   color: var(--nightclub-text-dim);
   line-height: 1.8;
-  white-space: pre-line;
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
   overflow: hidden;
-  transition: max-height 0.3s ease;
 }
 
 .detection-result-data.expanded {
-  max-height: 1000px;
+  grid-template-rows: 1fr;
   margin-top: 8px;
+}
+
+.detection-result-data-inner {
+  overflow: hidden;
   padding-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -921,6 +925,10 @@ button:active,
   }
 
   .detection-result-data {
+    font-size: 12px;
+  }
+
+  .detection-result-data-inner {
     font-size: 12px;
   }
 
@@ -1978,6 +1986,11 @@ function renderDetectionPage(data: NightclubData): string {
   const detectionData = data.侦测数据 || {};
   const detectionCount = Object.keys(detectionData).length;
 
+  // 辅助函数：将 \n 转换为 <br>
+  const formatDetectionText = (text: string): string => {
+    return text.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
+  };
+
   // 收集所有可侦测的角色
   const availableTargets: Array<{ name: string; category: string; info: string }> = [];
 
@@ -2032,13 +2045,16 @@ function renderDetectionPage(data: NightclubData): string {
                 : Object.entries(detectionData)
                     .map(([name, detectionText]) => {
                       const escapedName = name.replace(/'/g, "\\'");
+                      const formattedText = formatDetectionText(detectionText);
                       return `
                       <div class="detection-result-item" data-detection-target="${escapedName}">
                         <div class="detection-result-header">
                           <span class="detection-result-name">${name}</span>
                           <span class="detection-result-toggle">点击展开/收起</span>
                         </div>
-                        <div class="detection-result-data">${detectionText}</div>
+                        <div class="detection-result-data">
+                          <div class="detection-result-data-inner">${formattedText}</div>
+                        </div>
                       </div>
                     `;
                     })

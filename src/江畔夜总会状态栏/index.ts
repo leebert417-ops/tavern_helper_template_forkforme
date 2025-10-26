@@ -557,6 +557,170 @@ button:active,
   outline: none !important;
   -webkit-tap-highlight-color: transparent !important;
 }
+
+/* 对象侦测页面 */
+.detection-description {
+  padding: 12px;
+  background: rgba(233, 69, 96, 0.1);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--nightclub-text-dim);
+}
+
+.detection-selected-info {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detection-selected-info #detection-selected-count {
+  color: var(--nightclub-primary);
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 4px;
+}
+
+.detection-clear-btn {
+  padding: 4px 12px;
+  background: rgba(233, 69, 96, 0.2);
+  border: 1px solid var(--nightclub-primary);
+  border-radius: 6px;
+  color: var(--nightclub-primary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.detection-clear-btn:hover {
+  background: rgba(233, 69, 96, 0.3);
+}
+
+.detection-targets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.detection-target-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.detection-target-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(233, 69, 96, 0.5);
+  transform: translateY(-2px);
+}
+
+.detection-target-item.selected {
+  background: rgba(233, 69, 96, 0.15);
+  border-color: var(--nightclub-primary);
+  box-shadow: 0 0 12px rgba(233, 69, 96, 0.3);
+}
+
+.detection-target-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.detection-target-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--nightclub-text-light);
+}
+
+.detection-target-category {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: rgba(233, 69, 96, 0.2);
+  border-radius: 12px;
+  color: var(--nightclub-primary);
+}
+
+.detection-target-info {
+  font-size: 12px;
+  color: var(--nightclub-text-dim);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.detection-target-status {
+  font-size: 12px;
+  text-align: center;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  color: var(--nightclub-text-dim);
+}
+
+.detection-target-item.selected .detection-target-status {
+  background: rgba(233, 69, 96, 0.3);
+  color: var(--nightclub-primary);
+  font-weight: 600;
+}
+
+.detection-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.detection-action-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, var(--nightclub-primary) 0%, #c8365a 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.detection-action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
+}
+
+.detection-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.detection-action-btn.detection-remove-btn {
+  background: linear-gradient(135deg, #444 0%, #666 100%);
+}
+
+.detection-action-btn.detection-remove-btn:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .detection-targets-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  
+  .detection-actions {
+    flex-direction: column;
+  }
+}
 </style>
 `;
 
@@ -591,6 +755,9 @@ const html = `
     <button class="nightclub-tab" data-page="archived">
       📁 已归档<span class="nightclub-tab-badge" id="tab-badge-archived">0</span>
     </button>
+    <button class="nightclub-tab" data-page="detection">
+      🔍 对象侦测<span class="nightclub-tab-badge" id="tab-badge-detection">0</span>
+    </button>
   </div>
   
   <div class="nightclub-content" id="nightclub-content">
@@ -622,7 +789,8 @@ const MAX_RETRIES = 5;
 const RETRY_DELAY = 400;
 let currentRetry = 0;
 const DRAG_THRESHOLD = 5; // 拖动阈值（像素），小于此值视为点击
-let currentPage: 'club' | 'workshop' | 'trainees' | 'archived' = 'club'; // 当前页面
+let currentPage: 'club' | 'workshop' | 'trainees' | 'archived' | 'detection' = 'club'; // 当前页面
+let selectedDetectionTargets: Set<string> = new Set(); // 选中的侦测对象
 
 // ==================== 工具函数 ====================
 function safeGet(data: any, path: string, defaultValue: string = '未知'): string {
@@ -874,7 +1042,12 @@ function initializeTabSwitching(targetDoc: Document): void {
     tab.addEventListener('click', function (e) {
       e.stopPropagation(); // 防止触发拖动
 
-      const page = (this as HTMLElement).getAttribute('data-page') as 'club' | 'workshop' | 'trainees' | 'archived';
+      const page = (this as HTMLElement).getAttribute('data-page') as
+        | 'club'
+        | 'workshop'
+        | 'trainees'
+        | 'archived'
+        | 'detection';
       if (!page) return;
 
       // 更新当前页面
@@ -1191,14 +1364,17 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
   const ordersCount = data.夜总会经营?.待处理订单?.length || 0;
   const traineesCount = data.工坊培养对象?.培养列表?.length || 0;
   const archivedCount = data.已归档?.档案列表?.length || 0;
+  const detectionCount = selectedDetectionTargets.size;
 
   const workshopBadge = targetDoc.getElementById('tab-badge-workshop');
   const traineesBadge = targetDoc.getElementById('tab-badge-trainees');
   const archivedBadge = targetDoc.getElementById('tab-badge-archived');
+  const detectionBadge = targetDoc.getElementById('tab-badge-detection');
 
   if (workshopBadge) workshopBadge.textContent = String(ordersCount);
   if (traineesBadge) traineesBadge.textContent = String(traineesCount);
   if (archivedBadge) archivedBadge.textContent = String(archivedCount);
+  if (detectionBadge) detectionBadge.textContent = String(detectionCount);
 
   // 构建 HTML
   let html = '';
@@ -1216,9 +1392,17 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
   } else if (currentPage === 'archived') {
     // ========== 已归档页面 ==========
     html += renderArchivedPage(data);
+  } else if (currentPage === 'detection') {
+    // ========== 对象侦测页面 ==========
+    html += renderDetectionPage(data);
   }
 
   contentDiv.innerHTML = html;
+
+  // 如果是侦测页面，需要绑定事件
+  if (currentPage === 'detection') {
+    initializeDetectionEvents(targetDoc);
+  }
 }
 
 // ==================== 渲染会所状态页面 ====================
@@ -1564,6 +1748,215 @@ function renderArchivedPage(data: NightclubData): string {
   }
 
   return html;
+}
+
+// ==================== 渲染对象侦测页面 ====================
+function renderDetectionPage(data: NightclubData): string {
+  let html = '';
+
+  // 收集所有可侦测的角色
+  const availableTargets: Array<{ name: string; category: string; info: string }> = [];
+
+  // 添加培养对象
+  if (data.工坊培养对象?.培养列表) {
+    data.工坊培养对象.培养列表.forEach(trainee => {
+      if (trainee.姓名) {
+        availableTargets.push({
+          name: trainee.姓名,
+          category: '培养对象',
+          info: `编号: ${trainee.编号 || '未知'} | 培养进度: ${trainee.培养进度 || '0'}%`,
+        });
+      }
+    });
+  }
+
+  // 添加已归档对象
+  if (data.已归档?.档案列表) {
+    data.已归档.档案列表.forEach(artist => {
+      if (artist.艺名) {
+        availableTargets.push({
+          name: artist.艺名,
+          category: '已归档',
+          info: `类型: ${artist.类型 || '未知'} | 状态: ${artist.当前状态 || '未知'}`,
+        });
+      }
+    });
+  }
+
+  // 添加云舒和云卷
+  availableTargets.push(
+    { name: '云舒', category: '管理层', info: '会所管理者 | 地上业务负责人' },
+    { name: '云卷', category: '管理层', info: '工坊管理者 | 地下业务负责人' },
+  );
+
+  html += `
+    <div class="nightclub-card">
+      <div class="nightclub-card-title">
+        <span>🔍</span>
+        <span>对象侦测</span>
+      </div>
+      <div class="nightclub-card-content">
+        <div class="detection-description">
+          选择需要侦测的对象（建议3个以下），系统将生成详细的身体数据侦测，包括整体情况、神情、嘴部、胸部、乳头、乳晕、屁股、小穴、屁眼等信息。
+        </div>
+        
+        <div class="detection-selected-info">
+          已选择: <span id="detection-selected-count">${selectedDetectionTargets.size}</span> 个对象
+          ${
+            selectedDetectionTargets.size > 0
+              ? `<button class="detection-clear-btn" id="detection-clear-all">清空选择</button>`
+              : ''
+          }
+        </div>
+        
+        <div class="detection-targets-grid">
+  `;
+
+  availableTargets.forEach(target => {
+    const isSelected = selectedDetectionTargets.has(target.name);
+    html += `
+      <div class="detection-target-item ${isSelected ? 'selected' : ''}" data-target-name="${target.name}">
+        <div class="detection-target-header">
+          <span class="detection-target-name">${target.name}</span>
+          <span class="detection-target-category">${target.category}</span>
+        </div>
+        <div class="detection-target-info">${target.info}</div>
+        <div class="detection-target-status">${isSelected ? '✓ 已选择' : '点击选择'}</div>
+      </div>
+    `;
+  });
+
+  html += `
+        </div>
+        
+        <div class="detection-actions">
+          <button class="detection-action-btn" id="detection-start-btn" ${selectedDetectionTargets.size === 0 ? 'disabled' : ''}>
+            🔍 开始侦测
+          </button>
+          <button class="detection-action-btn detection-remove-btn" id="detection-remove-btn" ${selectedDetectionTargets.size === 0 ? 'disabled' : ''}>
+            🗑️ 删除侦测数据
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+// ==================== 初始化侦测页面事件 ====================
+function initializeDetectionEvents(targetDoc: Document): void {
+  // 目标选择事件
+  const targetItems = targetDoc.querySelectorAll('.detection-target-item');
+  targetItems.forEach(item => {
+    item.addEventListener('click', function () {
+      const targetName = (this as HTMLElement).getAttribute('data-target-name');
+      if (!targetName) return;
+
+      if (selectedDetectionTargets.has(targetName)) {
+        selectedDetectionTargets.delete(targetName);
+      } else {
+        if (selectedDetectionTargets.size >= 3) {
+          alert('建议最多选择3个对象进行侦测');
+          return;
+        }
+        selectedDetectionTargets.add(targetName);
+      }
+
+      // 重新渲染页面
+      if (cachedMVUData) {
+        renderNightclubData(cachedMVUData, targetDoc);
+      }
+    });
+  });
+
+  // 清空选择按钮
+  const clearAllBtn = targetDoc.getElementById('detection-clear-all');
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', () => {
+      selectedDetectionTargets.clear();
+      if (cachedMVUData) {
+        renderNightclubData(cachedMVUData, targetDoc);
+      }
+    });
+  }
+
+  // 开始侦测按钮
+  const startBtn = targetDoc.getElementById('detection-start-btn');
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      if (selectedDetectionTargets.size === 0) return;
+
+      const targets = Array.from(selectedDetectionTargets);
+      let command = `对以下对象进行详细身体数据侦测：\n\n`;
+
+      targets.forEach((target, index) => {
+        command += `【${target}】\n`;
+        command += `请侦测以下部位并将结果保存到变量 侦测数据.${target}（每个部位描述后用换行符分割）：\n`;
+        command += `1. 整体情况\n`;
+        command += `2. 神情\n`;
+        command += `3. 嘴部\n`;
+        command += `4. 胸部\n`;
+        command += `5. 乳头\n`;
+        command += `6. 乳晕\n`;
+        command += `7. 屁股\n`;
+        command += `8. 小穴\n`;
+        command += `9. 屁眼\n\n`;
+        command += `执行命令示例：\n`;
+        command += `_.set('侦测数据.${target}[0]', '侦测数据', '整体情况：...\\n神情：...\\n嘴部：...\\n胸部：...\\n乳头：...\\n乳晕：...\\n屁股：...\\n小穴：...\\n屁眼：...')`;
+
+        if (index < targets.length - 1) {
+          command += `\n\n---\n\n`;
+        }
+      });
+
+      fillCommand(command);
+    });
+  }
+
+  // 删除侦测数据按钮
+  const removeBtn = targetDoc.getElementById('detection-remove-btn');
+  if (removeBtn) {
+    removeBtn.addEventListener('click', () => {
+      if (selectedDetectionTargets.size === 0) return;
+
+      const targets = Array.from(selectedDetectionTargets);
+      let command = `删除以下对象的侦测数据：\n\n`;
+
+      targets.forEach(target => {
+        command += `_.remove('侦测数据', '${target}')\n`;
+      });
+
+      fillCommand(command);
+
+      // 清空选择
+      selectedDetectionTargets.clear();
+      if (cachedMVUData) {
+        renderNightclubData(cachedMVUData, targetDoc);
+      }
+    });
+  }
+}
+
+// 填充命令到输入框
+function fillCommand(command: string): void {
+  try {
+    const chatInput = (parent.document || document).querySelector('#send_textarea') as HTMLTextAreaElement;
+    if (chatInput) {
+      if (chatInput.value.trim() !== '') {
+        chatInput.value += '\n\n' + command;
+      } else {
+        chatInput.value = command;
+      }
+      chatInput.focus();
+      console.log('✅ 命令已填充到输入框');
+    } else {
+      throw new Error('未找到输入框');
+    }
+  } catch (e) {
+    alert('未能自动找到输入框，请手动复制命令：\n\n' + command);
+    console.error('填充命令失败:', e);
+  }
 }
 
 // ==================== 启动脚本 ====================

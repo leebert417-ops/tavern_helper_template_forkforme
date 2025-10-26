@@ -2218,25 +2218,21 @@ function initializeDetectionEvents(targetDoc: Document): void {
       if (selectedDetectionTargets.size === 0) return;
 
       const targets = Array.from(selectedDetectionTargets);
-      let command = `对以下对象进行详细身体数据侦测：\n\n`;
+      let command = `request: 本回合不要输出正文内容！！！\n\n对以下对象进行详细身体数据侦测：`;
 
       targets.forEach((target, index) => {
-        command += `【${target}】\n`;
-        command += `请侦测以下部位并将结果保存到变量 侦测数据.${target}（每个部位描述后用换行符分割）：\n`;
-        command += `1. 整体情况\n`;
-        command += `2. 神情\n`;
-        command += `3. 嘴部\n`;
-        command += `4. 胸部\n`;
-        command += `5. 乳头\n`;
-        command += `6. 乳晕\n`;
-        command += `7. 屁股\n`;
-        command += `8. 小穴\n`;
-        command += `9. 屁眼\n\n`;
-        command += `执行命令示例：\n`;
-        command += `_.set('侦测数据.${target}[0]', '侦测数据', '整体情况：...\\n神情：...\\n嘴部：...\\n胸部：...\\n乳头：...\\n乳晕：...\\n屁股：...\\n小穴：...\\n屁眼：...')`;
-
+        command += `【${target}】`;
         if (index < targets.length - 1) {
-          command += `\n\n---\n\n`;
+          command += `、`;
+        }
+      });
+
+      command += `\n\n请侦测以下部位（每个部位描述后用换行符分割）：1. 整体情况 2. 神情 3. 嘴部 4. 胸部 5. 乳头 6. 乳晕 7. 屁股 8. 小穴 9. 屁眼\n\n`;
+
+      targets.forEach((target, index) => {
+        command += `_.set('侦测数据.${target}[0]', '侦测数据', '整体情况：...\\n神情：...\\n嘴部：...\\n胸部：...\\n乳头：...\\n乳晕：...\\n屁股：...\\n小穴：...\\n屁眼：...')`;
+        if (index < targets.length - 1) {
+          command += `\n`;
         }
       });
 

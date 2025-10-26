@@ -559,32 +559,117 @@ button:active,
 }
 
 /* 对象侦测页面 */
-.detection-description {
-  padding: 12px;
-  background: rgba(233, 69, 96, 0.1);
-  border-radius: 8px;
+.detection-current-display {
+  background: rgba(233, 69, 96, 0.08);
+  border: 2px solid rgba(233, 69, 96, 0.3);
+  border-radius: 12px;
   margin-bottom: 16px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--nightclub-text-dim);
+  overflow: hidden;
 }
 
-.detection-selected-info {
-  padding: 10px 12px;
+.detection-display-header {
+  padding: 12px 16px;
+  background: rgba(233, 69, 96, 0.15);
+  border-bottom: 1px solid rgba(233, 69, 96, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detection-display-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--nightclub-primary);
+}
+
+.detection-display-content {
+  padding: 12px;
+  min-height: 80px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.detection-display-empty {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--nightclub-text-dim);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.detection-display-item {
   background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  margin-bottom: 16px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.detection-display-item:last-child {
+  margin-bottom: 0;
+}
+
+.detection-display-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.detection-display-item-name {
   font-size: 14px;
+  font-weight: 700;
+  color: var(--nightclub-text-light);
+}
+
+.detection-display-item-category {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: rgba(233, 69, 96, 0.25);
+  border-radius: 10px;
+  color: var(--nightclub-primary);
+  white-space: nowrap;
+}
+
+.detection-display-item-remove {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(233, 69, 96, 0.3);
+  border: 1px solid var(--nightclub-primary);
+  color: var(--nightclub-primary);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
 }
 
-.detection-selected-info #detection-selected-count {
-  color: var(--nightclub-primary);
-  font-weight: 700;
-  font-size: 16px;
-  margin: 0 4px;
+.detection-display-item-remove:hover {
+  background: var(--nightclub-primary);
+  color: white;
+  transform: scale(1.1);
+}
+
+.detection-display-item-info {
+  font-size: 12px;
+  color: var(--nightclub-text-dim);
+  line-height: 1.4;
+}
+
+.detection-description {
+  padding: 10px 12px;
+  background: rgba(233, 69, 96, 0.08);
+  border-left: 3px solid var(--nightclub-primary);
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--nightclub-text-dim);
 }
 
 .detection-clear-btn {
@@ -712,6 +797,14 @@ button:active,
 }
 
 @media (max-width: 768px) {
+  .detection-display-content {
+    max-height: 150px;
+  }
+
+  .detection-display-item-header {
+    flex-wrap: wrap;
+  }
+
   .detection-targets-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
@@ -1435,10 +1528,10 @@ function renderClubPage(data: NightclubData): string {
         <span>地上区域</span>
       </div>
       <div class="nightclub-card-content">
-        <div class="nightclub-info-row">
+          <div class="nightclub-info-row">
           <span class="nightclub-info-label">酒水吧台</span>
           <span class="nightclub-info-value">正常营业</span>
-        </div>
+          </div>
         <div class="nightclub-info-row">
           <span class="nightclub-info-label">豪华舞厅</span>
           <span class="nightclub-info-value">正常营业</span>
@@ -1451,9 +1544,9 @@ function renderClubPage(data: NightclubData): string {
           <span class="nightclub-info-label">VIP休息室</span>
           <span class="nightclub-info-value">正常营业</span>
         </div>
+        </div>
       </div>
-    </div>
-  `;
+    `;
 
   return html;
 }
@@ -1576,10 +1669,10 @@ function renderTraineesPage(data: NightclubData): string {
 
     if (trainees.length === 0) {
       html += `
-        <div class="nightclub-empty">
-          <div class="nightclub-empty-icon">📭</div>
-          <div class="nightclub-empty-text">暂无培养对象</div>
-        </div>
+          <div class="nightclub-empty">
+            <div class="nightclub-empty-icon">📭</div>
+            <div class="nightclub-empty-text">暂无培养对象</div>
+          </div>
       `;
     } else {
       html += `
@@ -1655,10 +1748,10 @@ function renderTraineesPage(data: NightclubData): string {
         `;
       });
 
-      html += `
-          </div>
+    html += `
         </div>
-      `;
+      </div>
+    `;
     }
   }
 
@@ -1674,10 +1767,10 @@ function renderArchivedPage(data: NightclubData): string {
 
     if (archived.length === 0) {
       html += `
-        <div class="nightclub-empty">
-          <div class="nightclub-empty-icon">📭</div>
-          <div class="nightclub-empty-text">暂无归档艺人</div>
-        </div>
+          <div class="nightclub-empty">
+            <div class="nightclub-empty-icon">📭</div>
+            <div class="nightclub-empty-text">暂无归档艺人</div>
+          </div>
       `;
     } else {
       html += `
@@ -1740,12 +1833,12 @@ function renderArchivedPage(data: NightclubData): string {
         `;
       });
 
-      html += `
+        html += `
           </div>
-        </div>
-      `;
+          </div>
+        `;
+      }
     }
-  }
 
   return html;
 }
@@ -1789,24 +1882,49 @@ function renderDetectionPage(data: NightclubData): string {
     { name: '云卷', category: '管理层', info: '工坊管理者 | 地下业务负责人' },
   );
 
-  html += `
+    html += `
     <div class="nightclub-card">
       <div class="nightclub-card-title">
         <span>🔍</span>
         <span>对象侦测</span>
-      </div>
+        </div>
       <div class="nightclub-card-content">
-        <div class="detection-description">
-          选择需要侦测的对象（建议3个以下），系统将生成详细的身体数据侦测，包括整体情况、神情、嘴部、胸部、乳头、乳晕、屁股、小穴、屁眼等信息。
+        <!-- 当前选中对象显示框 -->
+        <div class="detection-current-display">
+          <div class="detection-display-header">
+            <span class="detection-display-title">📋 当前选中对象 (${selectedDetectionTargets.size}/3)</span>
+            ${
+              selectedDetectionTargets.size > 0
+                ? `<button class="detection-clear-btn" id="detection-clear-all">清空</button>`
+                : ''
+            }
+          </div>
+          <div class="detection-display-content">
+            ${
+              selectedDetectionTargets.size === 0
+                ? `<div class="detection-display-empty">暂未选择任何对象，请从下方列表中选择</div>`
+                : Array.from(selectedDetectionTargets)
+                    .map(targetName => {
+                      const target = availableTargets.find(t => t.name === targetName);
+                      if (!target) return '';
+                      return `
+                      <div class="detection-display-item">
+                        <div class="detection-display-item-header">
+                          <span class="detection-display-item-name">${target.name}</span>
+                          <span class="detection-display-item-category">${target.category}</span>
+                          <button class="detection-display-item-remove" data-remove-target="${target.name}">×</button>
+                        </div>
+                        <div class="detection-display-item-info">${target.info}</div>
+      </div>
+    `;
+                    })
+                    .join('')
+            }
+          </div>
         </div>
         
-        <div class="detection-selected-info">
-          已选择: <span id="detection-selected-count">${selectedDetectionTargets.size}</span> 个对象
-          ${
-            selectedDetectionTargets.size > 0
-              ? `<button class="detection-clear-btn" id="detection-clear-all">清空选择</button>`
-              : ''
-          }
+        <div class="detection-description">
+          💡 提示：点击下方卡片选择对象（建议3个以下），侦测将包括：整体情况、神情、嘴部、胸部、乳头、乳晕、屁股、小穴、屁眼等详细数据
         </div>
         
         <div class="detection-targets-grid">
@@ -1846,23 +1964,31 @@ function renderDetectionPage(data: NightclubData): string {
 
 // ==================== 初始化侦测页面事件 ====================
 function initializeDetectionEvents(targetDoc: Document): void {
+  console.log('🔧 初始化侦测页面事件，当前选中对象:', selectedDetectionTargets);
+
   // 目标选择事件
   const targetItems = targetDoc.querySelectorAll('.detection-target-item');
+  console.log('🎯 找到目标卡片数量:', targetItems.length);
   targetItems.forEach(item => {
-    item.addEventListener('click', function () {
+    item.addEventListener('click', function (e) {
+      e.stopPropagation();
       const targetName = (this as HTMLElement).getAttribute('data-target-name');
+      console.log('👆 点击了卡片:', targetName);
       if (!targetName) return;
 
       if (selectedDetectionTargets.has(targetName)) {
         selectedDetectionTargets.delete(targetName);
+        console.log('➖ 取消选择:', targetName);
       } else {
         if (selectedDetectionTargets.size >= 3) {
           alert('建议最多选择3个对象进行侦测');
           return;
         }
         selectedDetectionTargets.add(targetName);
+        console.log('➕ 添加选择:', targetName);
       }
 
+      console.log('📊 更新后的选中对象:', selectedDetectionTargets);
       // 重新渲染页面
       if (cachedMVUData) {
         renderNightclubData(cachedMVUData, targetDoc);
@@ -1873,13 +1999,31 @@ function initializeDetectionEvents(targetDoc: Document): void {
   // 清空选择按钮
   const clearAllBtn = targetDoc.getElementById('detection-clear-all');
   if (clearAllBtn) {
-    clearAllBtn.addEventListener('click', () => {
+    clearAllBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      console.log('🗑️ 清空所有选择');
       selectedDetectionTargets.clear();
       if (cachedMVUData) {
         renderNightclubData(cachedMVUData, targetDoc);
       }
     });
   }
+
+  // 移除单个对象按钮
+  const removeButtons = targetDoc.querySelectorAll('.detection-display-item-remove');
+  removeButtons.forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const targetName = (this as HTMLElement).getAttribute('data-remove-target');
+      console.log('❌ 移除单个对象:', targetName);
+      if (targetName && selectedDetectionTargets.has(targetName)) {
+        selectedDetectionTargets.delete(targetName);
+        if (cachedMVUData) {
+          renderNightclubData(cachedMVUData, targetDoc);
+        }
+      }
+    });
+  });
 
   // 开始侦测按钮
   const startBtn = targetDoc.getElementById('detection-start-btn');

@@ -49,7 +49,7 @@ interface NightclubData {
       备注?: string[];
     }>;
   };
-  已归档艺人?: {
+  已归档?: {
     总数?: number | string;
     档案列表?: Array<{
       编号?: string;
@@ -59,6 +59,7 @@ interface NightclubData {
       来源?: string;
       特征?: string;
       当前状态?: string;
+      评价?: string;
       [key: string]: any;
     }>;
   };
@@ -1185,7 +1186,7 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
   // 更新标签徽章
   const ordersCount = data.夜总会经营?.待处理订单?.length || 0;
   const traineesCount = data.工坊培养对象?.培养列表?.length || 0;
-  const archivedCount = data.已归档艺人?.档案列表?.length || 0;
+  const archivedCount = data.已归档?.档案列表?.length || 0;
 
   const ordersBadge = targetDoc.getElementById('tab-badge-orders');
   const traineesBadge = targetDoc.getElementById('tab-badge-trainees');
@@ -1418,8 +1419,8 @@ function renderTraineesPage(data: NightclubData): string {
 function renderArchivedPage(data: NightclubData): string {
   let html = '';
 
-  if (data.已归档艺人) {
-    const archived = data.已归档艺人.档案列表 || [];
+  if (data.已归档) {
+    const archived = data.已归档.档案列表 || [];
 
     if (archived.length === 0) {
       html += `
@@ -1433,7 +1434,7 @@ function renderArchivedPage(data: NightclubData): string {
         <div class="nightclub-card">
           <div class="nightclub-card-title">
             <span>📁</span>
-            <span>已归档艺人 (${archived.length})</span>
+            <span>已归档 (${archived.length})</span>
           </div>
           <div class="nightclub-card-content">
       `;

@@ -1183,7 +1183,8 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
     const dateText = safeGet(data, '时间信息.当前日期', '');
     const timeText = safeGet(data, '时间信息.当前时间', '');
     const statusText = safeGet(data, '时间信息.营业状态', '');
-    timeDisplay.textContent = `${dateText} ${timeText} | ${statusText}`;
+    const locationText = safeGet(data, '地点信息.当前位置', '');
+    timeDisplay.textContent = `${dateText} ${timeText} | ${statusText}${locationText ? ` | ${locationText}` : ''}`;
   }
 
   // 更新标签徽章
@@ -1223,40 +1224,6 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
 // ==================== 渲染会所状态页面 ====================
 function renderClubPage(data: NightclubData): string {
   let html = '';
-
-  // 基本信息
-  if (data.时间信息 || data.地点信息) {
-    html += `
-      <div class="nightclub-card">
-        <div class="nightclub-card-title">
-          <span>📍</span>
-          <span>基本信息</span>
-        </div>
-        <div class="nightclub-card-content">
-          ${data.时间信息?.当前日期 ? `
-          <div class="nightclub-info-row">
-            <span class="nightclub-info-label">当前日期</span>
-            <span class="nightclub-info-value">${safeGet(data, '时间信息.当前日期', '未知')}</span>
-          </div>` : ''}
-          ${data.时间信息?.星期 ? `
-          <div class="nightclub-info-row">
-            <span class="nightclub-info-label">星期</span>
-            <span class="nightclub-info-value">${safeGet(data, '时间信息.星期', '未知')}</span>
-          </div>` : ''}
-          ${data.时间信息?.营业状态 ? `
-          <div class="nightclub-info-row">
-            <span class="nightclub-info-label">营业状态</span>
-            <span class="nightclub-info-value">${safeGet(data, '时间信息.营业状态', '未知')}</span>
-          </div>` : ''}
-          ${data.地点信息?.当前位置 ? `
-          <div class="nightclub-info-row">
-            <span class="nightclub-info-label">当前位置</span>
-            <span class="nightclub-info-value">${safeGet(data, '地点信息.当前位置', '未知')}</span>
-          </div>` : ''}
-        </div>
-      </div>
-    `;
-  }
 
   // 经营状况
   if (data.夜总会经营) {

@@ -161,6 +161,55 @@ const styles = `
   cursor: grabbing !important;
 }
 
+/* 标签页导航 */
+.nightclub-tabs {
+  flex-shrink: 0;
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.nightclub-tab {
+  flex: 1;
+  padding: 12px 16px;
+  text-align: center;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.nightclub-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.nightclub-tab.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom-color: var(--nightclub-primary);
+}
+
+.nightclub-tab-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.nightclub-tab.active .nightclub-tab-badge {
+  background: var(--nightclub-primary);
+}
+
 .nightclub-header-left {
   display: flex;
   flex-direction: column;
@@ -527,6 +576,19 @@ const html = `
     <button class="nightclub-close-btn" id="nightclub-close-btn">×</button>
   </div>
   
+  <!-- 标签页导航 -->
+  <div class="nightclub-tabs">
+    <button class="nightclub-tab active" data-page="orders">
+      📋 订单<span class="nightclub-tab-badge" id="tab-badge-orders">0</span>
+    </button>
+    <button class="nightclub-tab" data-page="trainees">
+      👥 培养对象<span class="nightclub-tab-badge" id="tab-badge-trainees">0</span>
+    </button>
+    <button class="nightclub-tab" data-page="archived">
+      📁 已归档<span class="nightclub-tab-badge" id="tab-badge-archived">0</span>
+    </button>
+  </div>
+  
   <div class="nightclub-content" id="nightclub-content">
     <div class="nightclub-loading">
       <div class="nightclub-loading-icon">⏳</div>
@@ -556,6 +618,7 @@ const MAX_RETRIES = 5;
 const RETRY_DELAY = 400;
 let currentRetry = 0;
 const DRAG_THRESHOLD = 5; // 拖动阈值（像素），小于此值视为点击
+let currentPage: 'orders' | 'trainees' | 'archived' = 'orders'; // 当前页面
 
 // ==================== 工具函数 ====================
 function safeGet(data: any, path: string, defaultValue: string = '未知'): string {
@@ -790,10 +853,43 @@ function initializePanelSystem(targetDoc: Document): void {
     });
   }
 
+  // 初始化标签页切换
+  initializeTabSwitching(targetDoc);
+
   // 初始化面板拖动功能
   initializePanelDrag(targetDoc);
 
   console.log('✅ 面板系统已初始化');
+}
+
+// ==================== 标签页切换 ====================
+function initializeTabSwitching(targetDoc: Document): void {
+  const tabs = targetDoc.querySelectorAll('.nightclub-tab');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function(e) {
+      e.stopPropagation(); // 防止触发拖动
+      
+      const page = (this as HTMLElement).getAttribute('data-page') as 'orders' | 'trainees' | 'archived';
+      if (!page) return;
+      
+      // 更新当前页面
+      currentPage = page;
+      
+      // 更新标签状态
+      tabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      
+      // 重新渲染当前页面内容
+      if (cachedMVUData) {
+        renderNightclubData(targetDoc, cachedMVUData);
+      }
+      
+      console.log('📄 切换到页面:', page);
+    });
+  });
+  
+  console.log('✅ 标签页切换已初始化');
 }
 
 // ==================== 面板拖动功能 ====================
@@ -1086,10 +1182,42 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
     timeDisplay.textContent = `${dateText} ${timeText} | ${statusText}`;
   }
 
+  // 更新标签徽章
+  const ordersCount = data.夜总会经营?.待处理订单?.length || 0;
+  const traineesCount = data.工坊培养对象?.培养列表?.length || 0;
+  const archivedCount = data.已归档艺人?.档案列表?.length || 0;
+
+  const ordersBadge = targetDoc.getElementById('tab-badge-orders');
+  const traineesBadge = targetDoc.getElementById('tab-badge-trainees');
+  const archivedBadge = targetDoc.getElementById('tab-badge-archived');
+
+  if (ordersBadge) ordersBadge.textContent = String(ordersCount);
+  if (traineesBadge) traineesBadge.textContent = String(traineesCount);
+  if (archivedBadge) archivedBadge.textContent = String(archivedCount);
+
   // 构建 HTML
   let html = '';
 
-  // 1. 经营状况卡片
+  // 根据当前页面渲染不同内容
+  if (currentPage === 'orders') {
+    // ========== 订单页面 ==========
+    html += renderOrdersPage(data);
+  } else if (currentPage === 'trainees') {
+    // ========== 培养对象页面 ==========
+    html += renderTraineesPage(data);
+  } else if (currentPage === 'archived') {
+    // ========== 已归档页面 ==========
+    html += renderArchivedPage(data);
+  }
+
+  contentDiv.innerHTML = html;
+}
+
+// ==================== 渲染订单页面 ====================
+function renderOrdersPage(data: NightclubData): string {
+  let html = '';
+
+  // 经营状况概览
   if (data.夜总会经营) {
     html += `
       <div class="nightclub-card">
@@ -1098,10 +1226,6 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
           <span>经营状况</span>
         </div>
         <div class="nightclub-card-content">
-          <div class="nightclub-info-row">
-            <span class="nightclub-info-label">在职员工</span>
-            <span class="nightclub-info-value">${safeGet(data, '夜总会经营.在职员工数', '0')} 人</span>
-          </div>
           <div class="nightclub-info-row">
             <span class="nightclub-info-label">VIP客户</span>
             <span class="nightclub-info-value">${safeGet(data, '夜总会经营.VIP客户数', '0')} 人</span>
@@ -1115,7 +1239,7 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
     `;
   }
 
-  // 1.5. 待处理订单详情卡片
+  // 待处理订单详情
   if (data.夜总会经营?.待处理订单 && data.夜总会经营.待处理订单.length > 0) {
     const orders = data.夜总会经营.待处理订单;
     html += `
@@ -1180,28 +1304,42 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
         </div>
       </div>
     `;
+  } else {
+    html += `
+      <div class="nightclub-empty">
+        <div class="nightclub-empty-icon">📭</div>
+        <div class="nightclub-empty-text">暂无待处理订单</div>
+      </div>
+    `;
   }
 
-  // 2. 工坊培养对象卡片
+  return html;
+}
+
+// ==================== 渲染培养对象页面 ====================
+function renderTraineesPage(data: NightclubData): string {
+  let html = '';
+
   if (data.工坊培养对象) {
     const trainees = data.工坊培养对象.培养列表 || [];
-    html += `
-      <div class="nightclub-card">
-        <div class="nightclub-card-title">
-          <span>👥</span>
-          <span>工坊培养对象 (${trainees.length})</span>
-        </div>
-        <div class="nightclub-card-content">
-    `;
-
+    
     if (trainees.length === 0) {
       html += `
-          <div class="nightclub-empty">
-            <div class="nightclub-empty-icon">📭</div>
-            <div class="nightclub-empty-text">暂无培养对象</div>
-          </div>
+        <div class="nightclub-empty">
+          <div class="nightclub-empty-icon">📭</div>
+          <div class="nightclub-empty-text">暂无培养对象</div>
+        </div>
       `;
     } else {
+      html += `
+        <div class="nightclub-card">
+          <div class="nightclub-card-title">
+            <span>👥</span>
+            <span>工坊培养对象 (${trainees.length})</span>
+          </div>
+          <div class="nightclub-card-content">
+      `;
+      
       trainees.forEach(trainee => {
         const name = trainee.姓名 || '未知';
         const code = trainee.编号 || '';
@@ -1265,38 +1403,42 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
           </div>
         `;
       });
-    }
 
-    html += `
+      html += `
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
   }
 
-  // 3. 已归档艺人卡片
+  return html;
+}
+
+// ==================== 渲染已归档页面 ====================
+function renderArchivedPage(data: NightclubData): string {
+  let html = '';
+
   if (data.已归档艺人) {
     const archived = data.已归档艺人.档案列表 || [];
-    const displayArchived = archived.slice(0, 5);
-    const moreCount = archived.length > 5 ? archived.length - 5 : 0;
 
-    html += `
-      <div class="nightclub-card">
-        <div class="nightclub-card-title">
-          <span>📁</span>
-          <span>已归档艺人 (${archived.length})</span>
-        </div>
-        <div class="nightclub-card-content">
-    `;
-
-    if (displayArchived.length === 0) {
+    if (archived.length === 0) {
       html += `
-          <div class="nightclub-empty">
-            <div class="nightclub-empty-icon">📭</div>
-            <div class="nightclub-empty-text">暂无归档艺人</div>
-          </div>
+        <div class="nightclub-empty">
+          <div class="nightclub-empty-icon">📭</div>
+          <div class="nightclub-empty-text">暂无归档艺人</div>
+        </div>
       `;
     } else {
-      displayArchived.forEach(artist => {
+      html += `
+        <div class="nightclub-card">
+          <div class="nightclub-card-title">
+            <span>📁</span>
+            <span>已归档艺人 (${archived.length})</span>
+          </div>
+          <div class="nightclub-card-content">
+      `;
+
+      archived.forEach(artist => {
         const code = artist.编号 || '';
         const name = artist.艺名 || '未知';
         const type = artist.类型 || '未知';
@@ -1304,6 +1446,7 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
         const origin = artist.来源 || '';
         const features = artist.特征 || '';
         const currentStatus = artist.当前状态 || '';
+        const evaluation = artist.评价 || '';
 
         html += `
           <div class="nightclub-trainee-item">
@@ -1333,26 +1476,27 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
             </div>`
                 : ''
             }
+            ${
+              evaluation
+                ? `
+            <div class="nightclub-info-row">
+              <span class="nightclub-info-label">评价</span>
+              <span class="nightclub-info-value">${evaluation}</span>
+            </div>`
+                : ''
+            }
           </div>
         `;
       });
 
-      if (moreCount > 0) {
-        html += `
-          <div style="text-align: center; margin-top: 12px; color: var(--nightclub-text-dim); font-size: 12px;">
-            还有 ${moreCount} 个归档艺人未显示
+      html += `
           </div>
-        `;
-      }
-    }
-
-    html += `
         </div>
-      </div>
-    `;
+      `;
+    }
   }
 
-  contentDiv.innerHTML = html;
+  return html;
 }
 
 // ==================== 启动脚本 ====================

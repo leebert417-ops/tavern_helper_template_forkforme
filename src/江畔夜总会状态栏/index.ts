@@ -63,6 +63,9 @@ interface NightclubData {
       [key: string]: any;
     }>;
   };
+  侦测数据?: {
+    [key: string]: string;
+  };
 }
 
 // ==================== 样式定义 ====================
@@ -582,6 +585,109 @@ button:active,
   color: var(--nightclub-primary);
 }
 
+/* 侦测结果显示框 */
+.detection-results-display {
+  background: rgba(76, 175, 80, 0.08);
+  border: 2px solid rgba(76, 175, 80, 0.3);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.detection-results-header {
+  padding: 12px 16px;
+  background: rgba(76, 175, 80, 0.15);
+  border-bottom: 1px solid rgba(76, 175, 80, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detection-results-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #4caf50;
+}
+
+.detection-results-content {
+  padding: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.detection-result-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.detection-result-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(76, 175, 80, 0.5);
+  transform: translateX(2px);
+}
+
+.detection-result-item:last-child {
+  margin-bottom: 0;
+}
+
+.detection-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.detection-result-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4caf50;
+}
+
+.detection-result-toggle {
+  font-size: 12px;
+  color: var(--nightclub-text-dim);
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.detection-result-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--nightclub-text-light);
+}
+
+.detection-result-data {
+  font-size: 13px;
+  color: var(--nightclub-text-dim);
+  line-height: 1.8;
+  white-space: pre-line;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.detection-result-data.expanded {
+  max-height: 1000px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detection-results-empty {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--nightclub-text-dim);
+  font-size: 13px;
+  font-style: italic;
+}
+
 .detection-display-content {
   padding: 12px;
   min-height: 80px;
@@ -797,6 +903,27 @@ button:active,
 }
 
 @media (max-width: 768px) {
+  .detection-results-content {
+    max-height: 250px;
+  }
+
+  .detection-result-item {
+    padding: 10px;
+  }
+
+  .detection-result-name {
+    font-size: 13px;
+  }
+
+  .detection-result-toggle {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+
+  .detection-result-data {
+    font-size: 12px;
+  }
+
   .detection-display-content {
     max-height: 150px;
   }
@@ -1748,7 +1875,7 @@ function renderTraineesPage(data: NightclubData): string {
         `;
       });
 
-    html += `
+      html += `
         </div>
       </div>
     `;
@@ -1833,12 +1960,12 @@ function renderArchivedPage(data: NightclubData): string {
         `;
       });
 
-        html += `
+      html += `
           </div>
           </div>
         `;
-      }
     }
+  }
 
   return html;
 }
@@ -1846,6 +1973,10 @@ function renderArchivedPage(data: NightclubData): string {
 // ==================== 渲染对象侦测页面 ====================
 function renderDetectionPage(data: NightclubData): string {
   let html = '';
+
+  // 获取已有的侦测数据
+  const detectionData = data.侦测数据 || {};
+  const detectionCount = Object.keys(detectionData).length;
 
   // 收集所有可侦测的角色
   const availableTargets: Array<{ name: string; category: string; info: string }> = [];
@@ -1882,13 +2013,40 @@ function renderDetectionPage(data: NightclubData): string {
     { name: '云卷', category: '管理层', info: '工坊管理者 | 地下业务负责人' },
   );
 
-    html += `
+  html += `
     <div class="nightclub-card">
       <div class="nightclub-card-title">
         <span>🔍</span>
         <span>对象侦测</span>
         </div>
       <div class="nightclub-card-content">
+        <!-- 已有侦测结果显示框 -->
+        <div class="detection-results-display">
+          <div class="detection-results-header">
+            <span class="detection-results-title">📊 侦测结果 (${detectionCount})</span>
+          </div>
+          <div class="detection-results-content">
+            ${
+              detectionCount === 0
+                ? `<div class="detection-results-empty">暂无侦测数据</div>`
+                : Object.entries(detectionData)
+                    .map(([name, detectionText]) => {
+                      const escapedName = name.replace(/'/g, "\\'");
+                      return `
+                      <div class="detection-result-item" data-detection-target="${escapedName}">
+                        <div class="detection-result-header">
+                          <span class="detection-result-name">${name}</span>
+                          <span class="detection-result-toggle">点击展开/收起</span>
+                        </div>
+                        <div class="detection-result-data">${detectionText}</div>
+                      </div>
+                    `;
+                    })
+                    .join('')
+            }
+          </div>
+        </div>
+        
         <!-- 当前选中对象显示框 -->
         <div class="detection-current-display">
           <div class="detection-display-header">
@@ -1965,6 +2123,18 @@ function renderDetectionPage(data: NightclubData): string {
 // ==================== 初始化侦测页面事件 ====================
 function initializeDetectionEvents(targetDoc: Document): void {
   console.log('🔧 初始化侦测页面事件，当前选中对象:', selectedDetectionTargets);
+
+  // 侦测结果展开/收起事件
+  const resultItems = targetDoc.querySelectorAll('.detection-result-item');
+  resultItems.forEach(item => {
+    item.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const dataElement = (this as HTMLElement).querySelector('.detection-result-data');
+      if (dataElement) {
+        dataElement.classList.toggle('expanded');
+      }
+    });
+  });
 
   // 目标选择事件
   const targetItems = targetDoc.querySelectorAll('.detection-target-item');

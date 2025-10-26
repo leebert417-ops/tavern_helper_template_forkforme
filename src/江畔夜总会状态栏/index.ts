@@ -1376,3 +1376,6 @@ waitForJQuery(() => {
 });
 
 console.log('✅ 江畔夜总会状态栏插件脚本加载完成');
+
+// 导出一个值以使其成为合法的ES Module，支持通过import语句加载
+export const __initialized__ = true;

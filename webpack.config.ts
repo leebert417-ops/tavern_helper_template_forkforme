@@ -108,7 +108,7 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
 
   return (_env, argv) => ({
     experiments: {
-      outputModule: entry.html !== undefined, // 只有前端界面（有 HTML）才使用 module
+      outputModule: true, // 所有脚本都使用 module 格式以支持 import 加载
     },
     devtool: argv.mode === 'production' ? 'source-map' : 'eval-source-map',
     watchOptions: {
@@ -134,7 +134,9 @@ function parse_configuration(entry: Entry): (_env: any, argv: any) => webpack.Co
       asyncChunks: true,
       clean: true,
       publicPath: '',
-      library: entry.html !== undefined ? { type: 'module' } : undefined, // 只有前端界面（有 HTML）才使用 module
+      library: {
+        type: 'module', // 所有脚本都使用 module 格式以支持 import 加载
+      },
     },
     module: {
       rules: [

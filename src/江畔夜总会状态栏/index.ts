@@ -579,8 +579,11 @@ const html = `
   
   <!-- 标签页导航 -->
   <div class="nightclub-tabs">
-    <button class="nightclub-tab active" data-page="orders">
-      📋 订单<span class="nightclub-tab-badge" id="tab-badge-orders">0</span>
+    <button class="nightclub-tab active" data-page="club">
+      🏢 会所状态
+    </button>
+    <button class="nightclub-tab" data-page="workshop">
+      🏭 工坊状态<span class="nightclub-tab-badge" id="tab-badge-workshop">0</span>
     </button>
     <button class="nightclub-tab" data-page="trainees">
       👥 培养对象<span class="nightclub-tab-badge" id="tab-badge-trainees">0</span>
@@ -619,7 +622,7 @@ const MAX_RETRIES = 5;
 const RETRY_DELAY = 400;
 let currentRetry = 0;
 const DRAG_THRESHOLD = 5; // 拖动阈值（像素），小于此值视为点击
-let currentPage: 'orders' | 'trainees' | 'archived' = 'orders'; // 当前页面
+let currentPage: 'club' | 'workshop' | 'trainees' | 'archived' = 'club'; // 当前页面
 
 // ==================== 工具函数 ====================
 function safeGet(data: any, path: string, defaultValue: string = '未知'): string {
@@ -866,30 +869,30 @@ function initializePanelSystem(targetDoc: Document): void {
 // ==================== 标签页切换 ====================
 function initializeTabSwitching(targetDoc: Document): void {
   const tabs = targetDoc.querySelectorAll('.nightclub-tab');
-  
+
   tabs.forEach(tab => {
-    tab.addEventListener('click', function(e) {
+    tab.addEventListener('click', function (e) {
       e.stopPropagation(); // 防止触发拖动
-      
-      const page = (this as HTMLElement).getAttribute('data-page') as 'orders' | 'trainees' | 'archived';
+
+      const page = (this as HTMLElement).getAttribute('data-page') as 'club' | 'workshop' | 'trainees' | 'archived';
       if (!page) return;
-      
+
       // 更新当前页面
       currentPage = page;
-      
+
       // 更新标签状态
       tabs.forEach(t => t.classList.remove('active'));
       this.classList.add('active');
-      
+
       // 重新渲染当前页面内容
       if (cachedMVUData) {
         renderNightclubData(targetDoc, cachedMVUData);
       }
-      
+
       console.log('📄 切换到页面:', page);
     });
   });
-  
+
   console.log('✅ 标签页切换已初始化');
 }
 
@@ -1188,11 +1191,11 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
   const traineesCount = data.工坊培养对象?.培养列表?.length || 0;
   const archivedCount = data.已归档?.档案列表?.length || 0;
 
-  const ordersBadge = targetDoc.getElementById('tab-badge-orders');
+  const workshopBadge = targetDoc.getElementById('tab-badge-workshop');
   const traineesBadge = targetDoc.getElementById('tab-badge-trainees');
   const archivedBadge = targetDoc.getElementById('tab-badge-archived');
 
-  if (ordersBadge) ordersBadge.textContent = String(ordersCount);
+  if (workshopBadge) workshopBadge.textContent = String(ordersCount);
   if (traineesBadge) traineesBadge.textContent = String(traineesCount);
   if (archivedBadge) archivedBadge.textContent = String(archivedCount);
 
@@ -1200,9 +1203,12 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
   let html = '';
 
   // 根据当前页面渲染不同内容
-  if (currentPage === 'orders') {
-    // ========== 订单页面 ==========
-    html += renderOrdersPage(data);
+  if (currentPage === 'club') {
+    // ========== 会所状态页面 ==========
+    html += renderClubPage(data);
+  } else if (currentPage === 'workshop') {
+    // ========== 工坊状态页面 ==========
+    html += renderWorkshopPage(data);
   } else if (currentPage === 'trainees') {
     // ========== 培养对象页面 ==========
     html += renderTraineesPage(data);
@@ -1214,11 +1220,45 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
   contentDiv.innerHTML = html;
 }
 
-// ==================== 渲染订单页面 ====================
-function renderOrdersPage(data: NightclubData): string {
+// ==================== 渲染会所状态页面 ====================
+function renderClubPage(data: NightclubData): string {
   let html = '';
 
-  // 经营状况概览
+  // 基本信息
+  if (data.时间信息 || data.地点信息) {
+    html += `
+      <div class="nightclub-card">
+        <div class="nightclub-card-title">
+          <span>📍</span>
+          <span>基本信息</span>
+        </div>
+        <div class="nightclub-card-content">
+          ${data.时间信息?.当前日期 ? `
+          <div class="nightclub-info-row">
+            <span class="nightclub-info-label">当前日期</span>
+            <span class="nightclub-info-value">${safeGet(data, '时间信息.当前日期', '未知')}</span>
+          </div>` : ''}
+          ${data.时间信息?.星期 ? `
+          <div class="nightclub-info-row">
+            <span class="nightclub-info-label">星期</span>
+            <span class="nightclub-info-value">${safeGet(data, '时间信息.星期', '未知')}</span>
+          </div>` : ''}
+          ${data.时间信息?.营业状态 ? `
+          <div class="nightclub-info-row">
+            <span class="nightclub-info-label">营业状态</span>
+            <span class="nightclub-info-value">${safeGet(data, '时间信息.营业状态', '未知')}</span>
+          </div>` : ''}
+          ${data.地点信息?.当前位置 ? `
+          <div class="nightclub-info-row">
+            <span class="nightclub-info-label">当前位置</span>
+            <span class="nightclub-info-value">${safeGet(data, '地点信息.当前位置', '未知')}</span>
+          </div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // 经营状况
   if (data.夜总会经营) {
     html += `
       <div class="nightclub-card">
@@ -1231,14 +1271,73 @@ function renderOrdersPage(data: NightclubData): string {
             <span class="nightclub-info-label">VIP客户</span>
             <span class="nightclub-info-value">${safeGet(data, '夜总会经营.VIP客户数', '0')} 人</span>
           </div>
-          <div class="nightclub-info-row">
-            <span class="nightclub-info-label">待处理订单</span>
-            <span class="nightclub-info-value">${data.夜总会经营.待处理订单?.length || 0} 个</span>
-          </div>
         </div>
       </div>
     `;
   }
+
+  // 地上各区域状态（预留接口）
+  html += `
+    <div class="nightclub-card">
+      <div class="nightclub-card-title">
+        <span>🏢</span>
+        <span>地上区域</span>
+      </div>
+      <div class="nightclub-card-content">
+        <div class="nightclub-info-row">
+          <span class="nightclub-info-label">酒水吧台</span>
+          <span class="nightclub-info-value">正常营业</span>
+        </div>
+        <div class="nightclub-info-row">
+          <span class="nightclub-info-label">豪华舞厅</span>
+          <span class="nightclub-info-value">正常营业</span>
+        </div>
+        <div class="nightclub-info-row">
+          <span class="nightclub-info-label">KTV包厢</span>
+          <span class="nightclub-info-value">正常营业</span>
+        </div>
+        <div class="nightclub-info-row">
+          <span class="nightclub-info-label">VIP休息室</span>
+          <span class="nightclub-info-value">正常营业</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+// ==================== 渲染工坊状态页面 ====================
+function renderWorkshopPage(data: NightclubData): string {
+  let html = '';
+
+  // 地下各区域状态
+  html += `
+    <div class="nightclub-card">
+      <div class="nightclub-card-title">
+        <span>🏭</span>
+        <span>地下区域</span>
+      </div>
+      <div class="nightclub-card-content">
+        <div class="nightclub-info-row">
+          <span class="nightclub-info-label">基础培训中心</span>
+          <span class="nightclub-info-value">运行中</span>
+        </div>
+        <div class="nightclub-info-row">
+          <span class="nightclub-info-label">形体塑造中心</span>
+          <span class="nightclub-info-value">运行中</span>
+        </div>
+        <div class="nightclub-info-row">
+          <span class="nightclub-info-label">保养护理中心</span>
+          <span class="nightclub-info-value">运行中</span>
+        </div>
+        <div class="nightclub-info-row">
+          <span class="nightclub-info-label">当前培养人数</span>
+          <span class="nightclub-info-value">${data.工坊培养对象?.当前培养人数 || 0} 人</span>
+        </div>
+      </div>
+    </div>
+  `;
 
   // 待处理订单详情
   if (data.夜总会经营?.待处理订单 && data.夜总会经营.待处理订单.length > 0) {
@@ -1323,7 +1422,7 @@ function renderTraineesPage(data: NightclubData): string {
 
   if (data.工坊培养对象) {
     const trainees = data.工坊培养对象.培养列表 || [];
-    
+
     if (trainees.length === 0) {
       html += `
         <div class="nightclub-empty">
@@ -1340,7 +1439,7 @@ function renderTraineesPage(data: NightclubData): string {
           </div>
           <div class="nightclub-card-content">
       `;
-      
+
       trainees.forEach(trainee => {
         const name = trainee.姓名 || '未知';
         const code = trainee.编号 || '';

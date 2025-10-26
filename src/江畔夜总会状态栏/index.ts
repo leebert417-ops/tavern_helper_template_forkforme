@@ -1592,7 +1592,7 @@ function renderNightclubData(targetDoc: Document, data: NightclubData): void {
   const ordersCount = data.夜总会经营?.待处理订单?.length || 0;
   const traineesCount = data.工坊培养对象?.培养列表?.length || 0;
   const archivedCount = data.已归档?.档案列表?.length || 0;
-  const detectionCount = selectedDetectionTargets.size;
+  const detectionCount = data.侦测数据 ? Object.keys(data.侦测数据).length : 0;
 
   const workshopBadge = targetDoc.getElementById('tab-badge-workshop');
   const traineesBadge = targetDoc.getElementById('tab-badge-trainees');

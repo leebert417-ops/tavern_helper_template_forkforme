@@ -1991,7 +1991,7 @@ function initializeDetectionEvents(targetDoc: Document): void {
       console.log('📊 更新后的选中对象:', selectedDetectionTargets);
       // 重新渲染页面
       if (cachedMVUData) {
-        renderNightclubData(cachedMVUData, targetDoc);
+        renderNightclubData(targetDoc, cachedMVUData);
       }
     });
   });
@@ -2004,7 +2004,7 @@ function initializeDetectionEvents(targetDoc: Document): void {
       console.log('🗑️ 清空所有选择');
       selectedDetectionTargets.clear();
       if (cachedMVUData) {
-        renderNightclubData(cachedMVUData, targetDoc);
+        renderNightclubData(targetDoc, cachedMVUData);
       }
     });
   }
@@ -2019,7 +2019,7 @@ function initializeDetectionEvents(targetDoc: Document): void {
       if (targetName && selectedDetectionTargets.has(targetName)) {
         selectedDetectionTargets.delete(targetName);
         if (cachedMVUData) {
-          renderNightclubData(cachedMVUData, targetDoc);
+          renderNightclubData(targetDoc, cachedMVUData);
         }
       }
     });
@@ -2076,7 +2076,7 @@ function initializeDetectionEvents(targetDoc: Document): void {
       // 清空选择
       selectedDetectionTargets.clear();
       if (cachedMVUData) {
-        renderNightclubData(cachedMVUData, targetDoc);
+        renderNightclubData(targetDoc, cachedMVUData);
       }
     });
   }

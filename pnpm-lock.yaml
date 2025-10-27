@@ -4716,7 +4716,11 @@ snapshots:
       '@vueuse/shared': 14.0.0(vue@3.5.22(typescript@6.0.0-dev.20250807))
       vue: 3.5.22(typescript@6.0.0-dev.20250807)
 
+<<<<<<< HEAD
   '@vueuse/integrations@13.9.0(axios@1.13.0)(focus-trap@7.6.5)(vue@3.5.22(typescript@6.0.0-dev.20250807))':
+=======
+  '@vueuse/integrations@13.9.0(axios@1.12.2)(focus-trap@7.6.5)(vue@3.5.22(typescript@6.0.0-dev.20250807))':
+>>>>>>> 890bb8f (feat: @vueuse/components)
     dependencies:
       '@vueuse/core': 13.9.0(vue@3.5.22(typescript@6.0.0-dev.20250807))
       '@vueuse/shared': 13.9.0(vue@3.5.22(typescript@6.0.0-dev.20250807))

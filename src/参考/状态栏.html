@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新艺传媒 运营状态</title>
+    <style>
+        :root {
+            --bg-color: #2c3e50;
+            --card-bg-color: #34495e;
+            --text-color: #ecf0f1;
+            --header-color: #1abc9c;
+            --label-color: #95a5a6;
+            --live-color: #ff4757;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: var(--text-color); margin: 0; padding: 10px; background-color: transparent; }
+        .status-card { background-color: var(--card-bg-color); border-radius: 8px; padding: 15px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+        .card-header { color: var(--header-color); font-size: 1.2em; font-weight: bold; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .collapse-button { font-size: 1.2em; transform-origin: center; transition: transform 0.3s ease; }
+        .status-card.collapsed .card-header { padding-bottom: 0; }
+        .status-card.collapsed .collapse-button { transform: rotate(-90deg); }
+        .card-content { display: block; }
+        .status-card.collapsed .card-content { display: none; }
+        .property { margin-bottom: 15px; }
+        .property-name { color: var(--label-color); font-size: 0.9em; margin-bottom: 5px; }
+        .property-value { font-size: 1em; font-weight: 500; }
+        .property-list { list-style-type: none; padding-left: 0; margin-top: 5px; }
+        .property-list li { background-color: var(--bg-color); padding: 5px 8px; border-radius: 4px; margin-top: 4px; font-size: 0.95em; }
+        .artist-card { background-color: var(--artist-card-bg, #2c3e50); border-radius: 6px; padding: 10px; margin-top: 5px; border-left: 3px solid var(--header-color); }
+        .artist-name { font-weight: bold; font-size: 1.05em; color: var(--header-color); }
+        .artist-details { font-size: 0.9em; color: var(--label-color); margin-top: 5px; }
+        .artist-details span { color: var(--text-color); }
+        .artist-description { font-size: 0.9em; color: var(--label-color); margin-top: 8px; padding-top: 8px; border-top: 1px dashed #34495e; }
+        .artist-description span { color: var(--text-color); }
+        .navigation { display: flex; margin: 10px 0 15px 0; border-bottom: 1px solid var(--bg-color); }
+        .nav-button { background-color: transparent; border: none; color: var(--label-color); padding: 8px 15px; cursor: pointer; font-size: 1em; border-bottom: 3px solid transparent; transition: color 0.2s, border-color 0.2s; margin-right: 10px; }
+        .nav-button:hover { color: var(--text-color); }
+        .nav-button.active { color: var(--header-color); border-bottom-color: var(--header-color); font-weight: bold; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .moment-post { padding: 10px 0; border-bottom: 1px solid var(--bg-color); }
+        .moment-post:last-child { border-bottom: none; }
+        .moment-header { display: flex; align-items: center; margin-bottom: 8px; }
+        .moment-avatar { width: 40px; height: 40px; background-color: var(--header-color); color: var(--card-bg-color); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; flex-shrink: 0; }
+        .moment-author { font-weight: bold; color: var(--header-color); }
+        .moment-content { font-size: 0.95em; line-height: 1.5; padding-left: 50px; }
+        .moment-footer { font-size: 0.8em; color: var(--label-color); padding-left: 50px; margin-top: 8px; }
+        .action-button { background-color: var(--header-color); color: white; border: none; border-radius: 5px; padding: 10px 15px; cursor: pointer; font-size: 0.9em; margin-top: 10px; width: 100%; box-sizing: border-box; }
+        .action-button:hover { opacity: 0.9; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-content { background-color: var(--card-bg-color); padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; border-top: 3px solid var(--header-color); }
+        .modal-content h3 { margin-top: 0; color: var(--header-color); }
+        #suggestions-list { list-style-type: none; padding: 0; margin: 15px 0; max-height: 200px; overflow-y: auto; }
+        #suggestions-list li { margin-bottom: 10px; display: flex; align-items: center; background-color: var(--bg-color); padding: 10px; border-radius: 4px; }
+        #suggestions-list input { margin-right: 10px; }
+        .modal-buttons { text-align: right; margin-top: 20px; }
+        .modal-buttons button { font-size: 0.9em; border: none; border-radius: 5px; padding: 10px 20px; cursor: pointer; margin-left: 10px; }
+        .modal-buttons .confirm-btn { background-color: var(--header-color); color: white; }
+        .modal-buttons .cancel-btn { background-color: #95a5a6; color: white; }
+        .artist-header { display: flex; justify-content: space-between; align-items: center; }
+        .artist-actions button { background: none; border: 1px solid var(--label-color); color: var(--label-color); font-size: 0.8em; cursor: pointer; padding: 2px 8px; border-radius: 5px; margin-left: 5px; }
+        .artist-actions button.active { color: var(--live-color); text-shadow: 0 0 5px var(--live-color); }
+        .artist-actions button:disabled { color: #555; cursor: not-allowed; }
+        .livestream-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: #111; display: none; flex-direction: column; z-index: 1100; }
+        .livestream-window { width: 100%; height: 100%; display: flex; flex-direction: column; }
+        .video-player { background-color: #000; color: white; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; }
+        .video-player .artist-name { font-size: 1.5em; color: var(--header-color); }
+        .video-player .live-content { font-size: 1.1em; margin-top: 10px; }
+        .comment-section { background-color: #181818; height: 200px; padding: 10px; box-sizing: border-box; overflow-y: scroll; border-top: 1px solid #444; }
+        .comment { margin-bottom: 8px; font-size: 0.9em; }
+        .comment .username { color: var(--label-color); font-weight: bold; }
+        .comment .message { color: var(--text-color); }
+        .livestream-close-btn { position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 1.2em; cursor: pointer; line-height: 30px; text-align: center; }
+        .twitter-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--card-bg-color); display: none; flex-direction: column; z-index: 1200; }
+        .twitter-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--bg-color); flex-shrink: 0; }
+        .twitter-header h3 { margin: 0; font-size: 1.2em; color: var(--header-color); }
+        .twitter-close-btn { background: none; border: none; color: var(--label-color); font-size: 1.5em; cursor: pointer; }
+        .twitter-feed { flex-grow: 1; overflow-y: auto; padding: 0 15px; }
+        .twitter-post-comments { padding-left: 60px; margin-top: 8px; border-top: 1px dashed var(--bg-color); padding-top: 8px; }
+        .twitter-post-comments .comment { font-size: 0.85em; margin-top: 4px; }
+    </style>
+</head>
+<body>
+<div class="status-card collapsed" id="status-card">
+    <div class="card-header" onclick="toggleCollapse()">
+        <span>新艺传媒 - 运营状态</span>
+        <span id="collapse-toggle" class="collapse-button">▼</span>
+    </div>
+    <div class="card-content">
+        <div class="navigation">
+            <button id="nav-home" class="nav-button" onclick="showPage('home')">主页</button>
+            <button id="nav-artists" class="nav-button" onclick="showPage('artists')">艺人</button>
+            <button id="nav-moments" class="nav-button" onclick="showPage('moments')">朋友圈</button>
+        </div>
+        <div class="card-body">
+            <div id="page-home" class="page">
+                <div class="property">
+                    <div class="property-name">世界信息</div>
+                    <div class="property-value" id="datetime-weather">
+                        📅 <span id="world-date">--</span>，
+                        ⏰ <span id="world-time">--</span>，
+                        <span id="world-weather">--</span>
+                    </div>
+                </div>
+                <div class="property"><div class="property-name">公司知名度</div><div class="property-value" id="company-fame">--</div></div>
+                <div class="property"><div class="property-name">当前处理事件</div><ul class="property-list" id="current-events"><li>--</li></ul></div>
+                <div class="property"><div class="property-name">系统发展建议</div><ul class="property-list" id="dev-suggestions"><li>--</li></ul></div>
+                <button class="action-button" onclick="openSuggestionsModal()">接受建议</button>
+            </div>
+            <div id="page-artists" class="page">
+                <div class="property"><div class="property-name">旗下主要艺人</div><div id="main-artists-list"><div class="property-value">还没有主要艺人呢~快去选择一个吧！</div></div></div>
+            </div>
+            <div id="page-moments" class="page"></div>
+        </div>
+    </div>
+</div>
+<div id="suggestions-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>请选择要采纳的建议：</h3>
+        <ul id="suggestions-list"></ul>
+        <div class="modal-buttons">
+            <button class="cancel-btn" onclick="closeSuggestionsModal()">取消</button>
+            <button class="confirm-btn" onclick="confirmSuggestions()">确定</button>
+        </div>
+    </div>
+</div>
+<div id="livestream-overlay" class="livestream-overlay">
+    <div class="livestream-window">
+        <button class="livestream-close-btn" onclick="closeLiveStream()">×</button>
+        <div class="video-player">
+            <h2 class="artist-name" id="live-artist-name"></h2>
+            <p class="live-content" id="live-content"></p>
+        </div>
+        <div class="comment-section" id="live-comment-section"></div>
+    </div>
+</div>
+<div id="twitter-overlay" class="twitter-overlay">
+    <div class="twitter-header">
+        <h3 id="twitter-artist-name"></h3>
+        <button class="twitter-close-btn" onclick="closeTwitterPage()">×</button>
+    </div>
+    <div class="twitter-feed" id="twitter-feed-container"></div>
+</div>
+<script>
+    let currentSuggestions = [];
+    let characterData = {};
+
+    function openLiveStream(artistName, liveContent) {
+        document.getElementById('live-artist-name').innerText = artistName;
+        document.getElementById('live-content').innerText = liveContent;
+        document.getElementById('livestream-overlay').style.display = 'flex';
+        const commentSection = document.getElementById('live-comment-section');
+        commentSection.innerHTML = '';
+
+        // 从变量数据中读取该艺人的直播评论
+        const liveComments = SafeGetValue(characterData, 'media_company.live_comments', []);
+        const artistComments = liveComments.find(item => SafeGetValue(item, 'artist') === artistName);
+
+        if (artistComments && SafeGetValue(artistComments, 'comments', []).length > 0) {
+            const comments = SafeGetValue(artistComments, 'comments', []);
+            comments.forEach(comment => {
+                addCommentToSection(
+                    SafeGetValue(comment, 'author', '观众'),
+                    SafeGetValue(comment, 'content', '')
+                );
+            });
+        } else {
+            // 如果没有评论数据，显示提示
+            const emptyEl = document.createElement('div');
+            emptyEl.className = 'comment';
+            emptyEl.style.textAlign = 'center';
+            emptyEl.style.color = 'var(--label-color)';
+            emptyEl.innerText = '暂无评论，等待观众互动...';
+            commentSection.appendChild(emptyEl);
+        }
+
+        // 自动滚动到底部
+        commentSection.scrollTop = commentSection.scrollHeight;
+    }
+
+    function closeLiveStream() {
+        document.getElementById('livestream-overlay').style.display = 'none';
+    }
+
+    function addCommentToSection(username, content) {
+        const commentSection = document.getElementById('live-comment-section');
+
+        const commentEl = document.createElement('div');
+        commentEl.className = 'comment';
+
+        const usernameSpan = document.createElement('span');
+        usernameSpan.className = 'username';
+        usernameSpan.innerText = `${username}: `;
+
+        const messageSpan = document.createElement('span');
+        messageSpan.className = 'message';
+        messageSpan.innerText = content;
+
+        commentEl.appendChild(usernameSpan);
+        commentEl.appendChild(messageSpan);
+
+        commentSection.appendChild(commentEl);
+    }
+
+    function openTwitterPage(artistName) {
+        const overlay = document.getElementById('twitter-overlay');
+        const nameEl = document.getElementById('twitter-artist-name');
+        const feedContainer = document.getElementById('twitter-feed-container');
+        nameEl.innerText = `${artistName}的动态`;
+        feedContainer.innerHTML = '';
+        const allPosts = SafeGetValue(characterData, 'media_company.twitter_feed', []);
+        const artistPosts = allPosts.filter(post => SafeGetValue(post, 'author') === artistName);
+
+        if (artistPosts.length > 0) {
+            artistPosts.forEach(post => {
+                const postEl = document.createElement('div');
+                postEl.className = 'moment-post';
+                const authorInitial = SafeGetValue(post, 'author', '?').charAt(0);
+                
+                let commentsHTML = '';
+                const comments = SafeGetValue(post, 'comments', []);
+                if (comments.length > 0) {
+                    comments.forEach(comment => {
+                        commentsHTML += `<div class="comment"><span class="username">${SafeGetValue(comment, 'author')}:</span> <span class="message">${SafeGetValue(comment, 'content')}</span></div>`;
+                    });
+                }
+
+                postEl.innerHTML = `
+                    <div class="moment-header">
+                        <div class="moment-avatar">${authorInitial}</div>
+                        <div class="moment-author">${SafeGetValue(post, 'author', '匿名')}</div>
+                    </div>
+                    <div class="moment-content">${SafeGetValue(post, 'content', '')}</div>
+                    <div class="moment-footer">
+                        <span class="moment-timestamp">${SafeGetValue(post, 'timestamp', '刚刚')}</span>
+                    </div>
+                    <div class="twitter-post-comments">${commentsHTML}</div>
+                `;
+                feedContainer.appendChild(postEl);
+            });
+        } else {
+            feedContainer.innerHTML = '<div class="property-value">这位艺人还没有发过动态哦~</div>';
+        }
+        overlay.style.display = 'flex';
+    }
+
+    function closeTwitterPage() {
+        document.getElementById('twitter-overlay').style.display = 'none';
+    }
+
+    function openSuggestionsModal() {
+        const listEl = document.getElementById('suggestions-list');
+        listEl.innerHTML = '';
+        if (currentSuggestions.length === 0) {
+            listEl.innerHTML = '<li>当前没有可用的建议。</li>';
+        } else {
+            currentSuggestions.forEach((suggestion, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<input type="checkbox" id="suggestion-${index}" value="${suggestion}"><label for="suggestion-${index}">${suggestion}</label>`;
+                listEl.appendChild(li);
+            });
+        }
+        document.getElementById('suggestions-modal').style.display = 'flex';
+    }
+
+    function closeSuggestionsModal() {
+        document.getElementById('suggestions-modal').style.display = 'none';
+    }
+
+    function confirmSuggestions() {
+        const selected = [];
+        document.querySelectorAll('#suggestions-list input[type="checkbox"]:checked').forEach(checkbox => {
+            selected.push(checkbox.value);
+        });
+        if (selected.length > 0) {
+            const promptText = `根据以下建议推动剧情：\n- ${selected.join('\n- ')}`;
+            const fullCommand = `/setinput ${promptText}`;
+            if (typeof SillyTavern !== 'undefined' && SillyTavern.executeSlashCommandsWithOptions) {
+                SillyTavern.executeSlashCommandsWithOptions(fullCommand);
+            } else {
+                console.error("SillyTavern API not found!");
+                alert("无法连接到SillyTavern的API！");
+            }
+        }
+        closeSuggestionsModal();
+    }
+
+    function toggleCollapse() {
+        const card = document.getElementById('status-card');
+        const isCollapsed = card.classList.contains('collapsed');
+        if (isCollapsed) {
+            card.classList.remove('collapsed');
+            showPage('home');
+        } else {
+            card.classList.add('collapsed');
+        }
+        document.getElementById('collapse-toggle').innerText = card.classList.contains('collapsed') ? '▼' : '▲';
+    }
+
+    function showPage(pageName) {
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        document.querySelectorAll('.nav-button').forEach(button => button.classList.remove('active'));
+        const activePage = document.getElementById('page-' + pageName);
+        if (activePage) activePage.classList.add('active');
+        const activeButton = document.getElementById('nav-' + pageName);
+        if (activeButton) activeButton.classList.add('active');
+    }
+
+    function SafeGetValue(obj, path, defaultValue = "N/A") {
+        let keys = Array.isArray(path) ? path : path.split('.');
+        let current = obj;
+        for (let i = 0; i < keys.length; i++) {
+            if (current === undefined || current === null || typeof current !== 'object' || !current.hasOwnProperty(keys[i])) {
+                return defaultValue;
+            }
+            current = current[keys[i]];
+        }
+        return (current === undefined || current === null) ? defaultValue : current;
+    }
+    
+    function renderUI() {
+        if (!characterData) { return; }
+
+        // Render World State
+        document.getElementById('world-date').innerText = SafeGetValue(characterData, 'world_state.date', '--');
+        document.getElementById('world-time').innerText = `${SafeGetValue(characterData, 'world_state.time_period', '')}${SafeGetValue(characterData, 'world_state.hour', '--')}时`;
+        document.getElementById('world-weather').innerText = SafeGetValue(characterData, 'world_state.weather', '--');
+
+        // Render Company Info
+        document.getElementById('company-fame').innerText = SafeGetValue(characterData, 'media_company.fame', '--');
+        const eventsListEl = document.getElementById('current-events');
+        const events = SafeGetValue(characterData, 'media_company.current_events', []);
+        if (eventsListEl && Array.isArray(events)) {
+            eventsListEl.innerHTML = '';
+            if (events.length > 0) {
+                events.forEach(event => {
+                    const li = document.createElement('li');
+                    li.innerText = event;
+                    eventsListEl.appendChild(li);
+                });
+            } else {
+                eventsListEl.innerHTML = '<li>暂无事件</li>';
+            }
+        }
+        const suggestionsListEl = document.getElementById('dev-suggestions');
+        const suggestions = SafeGetValue(characterData, 'media_company.development_suggestions', []);
+        currentSuggestions = suggestions;
+        if (suggestionsListEl && Array.isArray(suggestions)) {
+            suggestionsListEl.innerHTML = '';
+            if (suggestions.length > 0) {
+                suggestions.forEach(suggestion => {
+                    const li = document.createElement('li');
+                    li.innerText = suggestion;
+                    suggestionsListEl.appendChild(li);
+                });
+            } else {
+                suggestionsListEl.innerHTML = '<li>暂无建议</li>';
+            }
+        }
+
+        // Render Artists
+        const artistsContainer = document.getElementById('main-artists-list');
+        const artists = SafeGetValue(characterData, 'media_company.main_artists', []);
+        if (artistsContainer && Array.isArray(artists)) {
+            artistsContainer.innerHTML = '';
+            if (artists.length > 0) {
+                const currentHour = SafeGetValue(characterData, 'world_state.hour', -1);
+                artists.forEach(artist => {
+                    const artistCard = document.createElement('div');
+                    artistCard.className = 'artist-card';
+                    let isLive = false;
+                    const schedule = SafeGetValue(artist, 'live_schedule', '--');
+                    if (schedule !== '--' && schedule.includes('-')) {
+                        const timeRange = schedule.split('-');
+                        if (timeRange.length === 2) {
+                            const startHour = parseInt(timeRange[0].split(':')[0], 10);
+                            const endHour = parseInt(timeRange[1].split(':')[0], 10);
+                            if (!isNaN(startHour) && !isNaN(endHour)) {
+                                if (startHour <= endHour) {
+                                    isLive = currentHour >= startHour && currentHour < endHour;
+                                } else {
+                                    isLive = currentHour >= startHour || currentHour < endHour;
+                                }
+                            }
+                        }
+                    }
+                    const liveButtonClass = isLive ? 'active' : '';
+                    const liveButtonDisabled = isLive ? '' : 'disabled';
+                    const liveOnClick = isLive ? `openLiveStream('${SafeGetValue(artist, 'name')}', '${SafeGetValue(artist, 'live_content')}')` : '';
+                    artistCard.innerHTML = `
+                        <div class="artist-header">
+                            <div class="artist-name">${SafeGetValue(artist, 'name', '未知艺人')}</div>
+                            <div class="artist-actions">
+                                <button class="${liveButtonClass}" onclick="${liveOnClick}" ${liveButtonDisabled}>● Live</button>
+                                <button onclick="openTwitterPage('${SafeGetValue(artist, 'name')}')">Twitter</button>
+                            </div>
+                        </div>
+                        <div class="artist-details">知名度: <span>${SafeGetValue(artist, 'fame', 'N/A')}</span> | 主营: <span>${SafeGetValue(artist, 'content', 'N/A')}</span></div>
+                        <div class="artist-description">特点: <span>${SafeGetValue(artist, 'appearance', 'N/A')}；${SafeGetValue(artist, 'personality', 'N/A')}</span></div>
+                        <div class="artist-details">诉求: <span>${SafeGetValue(artist, 'demand', '无')}</span></div>
+                    `;
+                    artistsContainer.appendChild(artistCard);
+                });
+            } else {
+                artistsContainer.innerHTML = '<div class="property-value">还没有主要艺人呢~快去选择一个吧！</div>';
+            }
+        }
+
+        // Render Moments Feed
+        const momentsContainer = document.getElementById('page-moments');
+        const feed = SafeGetValue(characterData, 'media_company.moments_feed', []);
+        if (momentsContainer) {
+            momentsContainer.innerHTML = '';
+            if (feed.length > 0) {
+                feed.forEach(post => {
+                    const postEl = document.createElement('div');
+                    postEl.className = 'moment-post';
+                    const authorInitial = SafeGetValue(post, 'author', '?').charAt(0);
+
+                    let commentsHTML = '';
+                    const comments = SafeGetValue(post, 'comments', []);
+                    if (comments.length > 0) {
+                        comments.forEach(comment => {
+                            commentsHTML += `<div class="comment"><span class="username">${SafeGetValue(comment, 'author')}:</span> <span class="message">${SafeGetValue(comment, 'content')}</span></div>`;
+                        });
+                    }
+
+                    postEl.innerHTML = `
+                        <div class="moment-header">
+                            <div class="moment-avatar">${authorInitial}</div>
+                            <div class="moment-author">${SafeGetValue(post, 'author', '匿名')}</div>
+                        </div>
+                        <div class="moment-content">${SafeGetValue(post, 'content', '')}</div>
+                        <div class="moment-footer">
+                            <span class="moment-timestamp">${SafeGetValue(post, 'timestamp', '刚刚')}</span>
+                        </div>
+                        ${commentsHTML ? `<div class="twitter-post-comments">${commentsHTML}</div>` : ''}
+                    `;
+                    momentsContainer.appendChild(postEl);
+                });
+            } else {
+                momentsContainer.innerHTML = '<div class="property-value">还没有人发过动态哦~</div>';
+            }
+        }
+        showPage('home');
+    }
+
+    async function initDisplay() {
+        if (typeof getChatMessages === 'undefined' || typeof getCurrentMessageId === 'undefined') {
+            console.warn("SillyTavern API not available.");
+            return;
+        }
+        try {
+            const messages = await getChatMessages(getCurrentMessageId());
+            if (!messages || messages.length === 0 || !messages[0].data) { return; }
+            const gameData = messages[0].data;
+            characterData = gameData.stat_data;
+            renderUI();
+        } catch (error) {
+            console.error("状态栏加载出错:", error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initDisplay();
+    });
+</script>
+</body>
+</html>

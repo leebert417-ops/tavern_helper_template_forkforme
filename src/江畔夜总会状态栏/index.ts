@@ -19,12 +19,10 @@ interface NightclubData {
     在职员工数?: number | string;
     VIP客户数?: number | string;
     待处理订单?: Array<{
-      订单编号?: string;
-      客户代号?: string;
+      委托人?: string;
       需求类型?: string;
       具体要求?: string;
       截止日期?: string;
-      状态?: string;
       [key: string]: any;
     }>;
   };
@@ -37,7 +35,6 @@ interface NightclubData {
         年龄?: number | string;
         原始外貌?: string;
         来源?: string;
-        培养天数?: number | string;
       };
       培养进度?: number | string;
       定制信息?: {
@@ -45,21 +42,15 @@ interface NightclubData {
         目标形象?: string;
         特殊要求?: string;
       };
-      当前状态?: string;
       备注?: string[];
     }>;
   };
   已归档?: {
     总数?: number | string;
     档案列表?: Array<{
-      编号?: string;
+      姓名?: string;
       艺名?: string;
-      类型?: string;
-      年龄?: number | string;
-      来源?: string;
-      特征?: string;
-      当前状态?: string;
-      评价?: string;
+      简述?: string;
       [key: string]: any;
     }>;
   };
@@ -69,17 +60,20 @@ interface NightclubData {
 }
 
 // ==================== 样式定义 ====================
+/* eslint-disable */
 const styles = `
 <style id="nightclub-plugin-styles">
 :root {
   --nightclub-primary: #e94560;
-  --nightclub-bg-dark: #1a1a2e;
-  --nightclub-bg-mid: #16213e;
-  --nightclub-text-light: #eee;
-  --nightclub-text-dim: #aaa;
+  --nightclub-secondary: #0f3460;
+  --nightclub-bg-dark: #16213e;
+  --nightclub-bg-mid: #1a2332;
+  --nightclub-bg-light: #2a3447;
+  --nightclub-text-light: #e4e7eb;
+  --nightclub-text-dim: #a0a8b5;
 }
 
-/* 拖动按钮 */
+/* ==================== 拖动按钮 */
 .nightclub-toggle-btn {
   position: fixed !important;
   top: 100px;
@@ -99,7 +93,8 @@ const styles = `
   touch-action: none;
   font-size: 28px;
   border: 3px solid rgba(255, 255, 255, 0.3);
-  transition: transform 0.2s;
+  /* 只对 transform 和 box-shadow 添加过渡，不影响拖动 */
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
 }
 
 .nightclub-toggle-btn:hover {
@@ -110,22 +105,25 @@ const styles = `
   cursor: grabbing !important;
   opacity: 0.9;
   z-index: 10001 !important;
+  /* 拖动时完全禁用过渡 */
+  transition: none !important;
 }
 
-/* 主面板容器 */
+/* ==================== 主面板容器 */
 .nightclub-main-panel {
   position: fixed !important;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 50vh !important;
+  left: 50vw !important;
+  transform: translate(-50%, -50%) !important;
   width: 90vw !important;
   max-width: 800px !important;
   height: 85vh !important;
   max-height: 600px !important;
+  background: var(--nightclub-bg-dark);
   background: linear-gradient(135deg, var(--nightclub-bg-dark) 0%, var(--nightclub-bg-mid) 100%);
   border: 2px solid var(--nightclub-primary);
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(233, 69, 96, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   z-index: 9999 !important;
   display: none;
   flex-direction: column;
@@ -139,54 +137,53 @@ const styles = `
 }
 
 .nightclub-main-panel.dragging {
-  opacity: 0.95;
-  z-index: 10000 !important;
   transition: none !important;
 }
 
-/* 头部 */
+/* ==================== 头部 */
 .nightclub-header {
   flex-shrink: 0;
   padding: 16px 20px;
-  background: linear-gradient(135deg, var(--nightclub-primary) 0%, #c8365a 100%);
+  background: var(--nightclub-primary);
   color: white;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  cursor: grab;
+  cursor: move;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  transition: opacity 0.2s;
+  touch-action: none !important;
 }
 
 .nightclub-header.dragging {
+  opacity: 0.8;
   cursor: grabbing !important;
+  transition: none !important;
 }
 
-/* 标签页导航 */
+/* ==================== 标签页导航 */
 .nightclub-tabs {
-  flex-shrink: 0;
   display: flex;
-  background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .nightclub-tab {
   flex: 1;
   padding: 12px 16px;
-  text-align: center;
   background: transparent;
   border: none;
   color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
-  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  border-bottom: 3px solid transparent;
-  user-select: none;
-  -webkit-user-select: none;
+  transition: all 0.3s;
+  border-bottom: 2px solid transparent;
+  text-align: center;
 }
 
 .nightclub-tab:hover {
@@ -195,8 +192,7 @@ const styles = `
 }
 
 .nightclub-tab.active {
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--nightclub-primary);
   border-bottom-color: var(--nightclub-primary);
 }
 
@@ -204,14 +200,10 @@ const styles = `
   display: inline-block;
   margin-left: 6px;
   padding: 2px 6px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--nightclub-primary);
   border-radius: 10px;
   font-size: 11px;
   font-weight: 700;
-}
-
-.nightclub-tab.active .nightclub-tab-badge {
-  background: var(--nightclub-primary);
 }
 
 .nightclub-header-left {
@@ -222,7 +214,6 @@ const styles = `
 
 .nightclub-header-title {
   font-size: 18px;
-  font-weight: 700;
 }
 
 .nightclub-header-subtitle {
@@ -231,30 +222,30 @@ const styles = `
 }
 
 .nightclub-close-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: transparent;
   border: none;
   color: white;
+  font-size: 32px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
+  transition: transform 0.2s;
 }
 
 .nightclub-close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
   transform: scale(1.1);
 }
 
-/* 内容区域 */
+/* ==================== 内容区域 */
 .nightclub-content {
-  flex: 1;
-  overflow-y: auto;
+     flex: 1;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .nightclub-content::-webkit-scrollbar {
@@ -262,7 +253,7 @@ const styles = `
 }
 
 .nightclub-content::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .nightclub-content::-webkit-scrollbar-thumb {
@@ -270,29 +261,27 @@ const styles = `
   border-radius: 4px;
 }
 
-/* 卡片样式 */
+/* ==================== 卡片样式 */
 .nightclub-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--nightclub-bg-light);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  padding: 16px;
   margin-bottom: 16px;
+  overflow: hidden;
 }
 
 .nightclub-card-title {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  color: var(--nightclub-primary);
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 12px 16px;
+  background: rgba(233, 69, 96, 0.2);
+  font-weight: 600;
+  font-size: 16px;
 }
 
 .nightclub-card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  padding: 16px;
 }
 
 .nightclub-info-row {
@@ -303,6 +292,10 @@ const styles = `
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.nightclub-info-row:last-child {
+  border-bottom: none;
+}
+
 .nightclub-info-label {
   color: var(--nightclub-text-dim);
   font-size: 14px;
@@ -310,40 +303,40 @@ const styles = `
 
 .nightclub-info-value {
   color: var(--nightclub-text-light);
-  font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
+  text-align: right;
 }
 
-/* 进度条 */
+/* ==================== 进度条 */
 .nightclub-progress-bar {
   width: 100%;
   height: 8px;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
   overflow: hidden;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 .nightclub-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--nightclub-primary) 0%, #ff6b81 100%);
+  background: linear-gradient(90deg, #e94560 0%, #ff6b81 100%);
+  border-radius: 4px;
   transition: width 0.3s;
 }
 
-/* 培养对象列表 */
+/* ==================== 培养对象列表 */
 .nightclub-trainee-item {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   padding: 12px;
   margin-bottom: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .nightclub-trainee-item:hover {
-  background: rgba(255, 255, 255, 0.08);
   border-color: var(--nightclub-primary);
+  background: rgba(233, 69, 96, 0.1);
   transform: translateX(4px);
 }
 
@@ -355,9 +348,9 @@ const styles = `
 }
 
 .nightclub-trainee-name {
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
-  color: var(--nightclub-text-light);
+  color: var(--nightclub-primary);
 }
 
 .nightclub-trainee-status {
@@ -365,7 +358,7 @@ const styles = `
   color: var(--nightclub-text-dim);
 }
 
-/* 归档艺人 */
+/* ==================== 归档艺人 */
 .nightclub-archived-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -378,12 +371,17 @@ const styles = `
   border-radius: 8px;
   padding: 12px;
   text-align: center;
+  transition: all 0.3s;
+}
+
+.nightclub-archived-item:hover {
+  border-color: var(--nightclub-primary);
+  transform: translateY(-2px);
 }
 
 .nightclub-archived-name {
-  font-weight: 700;
+  font-weight: 600;
   margin-bottom: 4px;
-  color: var(--nightclub-text-light);
 }
 
 .nightclub-archived-type {
@@ -391,7 +389,26 @@ const styles = `
   color: var(--nightclub-text-dim);
 }
 
-/* 空状态 */
+/* 归档艺人简述样式 */
+.archived-description {
+  padding: 8px 0;
+  line-height: 1.6;
+}
+
+.archived-description-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--nightclub-primary);
+  margin-right: 4px;
+}
+
+.archived-description-text {
+  font-size: 14px;
+  color: var(--nightclub-text-light);
+  line-height: 1.6;
+}
+
+/* ==================== 空状态 */
 .nightclub-empty {
   text-align: center;
   padding: 40px 20px;
@@ -408,204 +425,64 @@ const styles = `
   font-size: 14px;
 }
 
-/* 加载状态 */
+/* ==================== 加载状态 */
 .nightclub-loading {
   text-align: center;
-  padding: 40px 20px;
-  color: var(--nightclub-primary);
+  padding: 40px;
+  color: var(--nightclub-text-dim);
 }
 
 .nightclub-loading-icon {
   font-size: 32px;
+  margin-bottom: 12px;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .nightclub-main-panel {
-    width: 95vw !important;
-    height: 90vh !important;
-    max-height: none !important;
+  from {
+    transform: rotate(0deg);
   }
-  
-  .nightclub-toggle-btn {
-    width: 56px;
-    height: 56px;
-    font-size: 24px;
-    /* 确保按钮可交互 */
-    pointer-events: auto !important;
-  }
-  
-  .nightclub-header {
-    padding: 12px 16px;
-  }
-  
-  .nightclub-header-title {
-    font-size: 16px !important;
-  }
-  
-  .nightclub-header-subtitle {
-    font-size: 11px !important;
-  }
-  
-  .nightclub-card {
-    padding: 12px;
-    margin-bottom: 12px;
-  }
-  
-  .nightclub-card-title {
-    font-size: 14px;
+  to {
+    transform: rotate(360deg);
   }
 }
 
-/* 竖屏优化 */
-@media (max-width: 480px) and (orientation: portrait) {
-  .nightclub-main-panel {
-    width: 100vw !important;
-    height: 100vh !important;
-    border-radius: 0;
-    top: 0 !important;
-    left: 0 !important;
-    transform: none !important;
-    max-width: none !important;
-  }
-  
-  .nightclub-toggle-btn {
-    width: 50px;
-    height: 50px;
-    font-size: 22px;
-    /* 确保按钮在小屏幕下也能正常工作 */
-    z-index: 10002 !important;
-    pointer-events: auto !important;
-  }
-  
-  .nightclub-content {
-    padding: 12px;
-  }
-  
-  .nightclub-archived-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* 横屏优化 */
-@media (max-height: 600px) and (orientation: landscape) {
-  .nightclub-main-panel {
-    height: 95vh !important;
-    max-height: none !important;
-  }
-  
-  .nightclub-header {
-    padding: 10px 16px;
-  }
-  
-  .nightclub-content {
-    padding: 12px 16px;
-  }
-}
-
-/* ==================== 全局移动端优化 ==================== */
-
-/* 防止双击缩放 */
-* {
-  touch-action: manipulation;
-}
-
-/* 移除触摸高亮 */
-* {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-}
-
-/* 优化滚动体验（iOS 平滑滚动） */
-.nightclub-content {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* 移动端字体优化 */
-@media (max-width: 768px) {
-  body {
-    -webkit-text-size-adjust: 100%;
-    -ms-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
-}
-
-/* 支持刘海屏等安全区域 - 仅在小屏幕应用 */
-@media (max-width: 768px) {
-  @supports (padding: max(0px)) {
-    .nightclub-main-panel {
-      padding-top: max(0px, env(safe-area-inset-top)) !important;
-      padding-bottom: max(0px, env(safe-area-inset-bottom)) !important;
-      padding-left: max(0px, env(safe-area-inset-left)) !important;
-      padding-right: max(0px, env(safe-area-inset-right)) !important;
-    }
-  }
-}
-
-/* 移除所有按钮和可交互元素的焦点框 */
-button:focus,
-button:active,
-.nightclub-toggle-btn:focus,
-.nightclub-toggle-btn:active,
-.nightclub-close-btn:focus,
-.nightclub-close-btn:active,
-.nightclub-trainee-item:focus,
-.nightclub-trainee-item:active {
-  outline: none !important;
-  -webkit-tap-highlight-color: transparent !important;
-}
-
-/* 对象侦测页面 */
+/* ==================== 对象侦测页面 */
 .detection-current-display {
-  background: rgba(233, 69, 96, 0.08);
-  border: 2px solid rgba(233, 69, 96, 0.3);
-  border-radius: 12px;
   margin-bottom: 16px;
-  overflow: hidden;
 }
 
 .detection-display-header {
-  padding: 12px 16px;
-  background: rgba(233, 69, 96, 0.15);
-  border-bottom: 1px solid rgba(233, 69, 96, 0.2);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px 8px 0 0;
 }
 
 .detection-display-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--nightclub-primary);
+  font-weight: 600;
+  font-size: 14px;
 }
 
 /* 侦测结果显示框 */
 .detection-results-display {
-  background: rgba(76, 175, 80, 0.08);
-  border: 2px solid rgba(76, 175, 80, 0.3);
-  border-radius: 12px;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 8px;
   margin-bottom: 16px;
   overflow: hidden;
 }
 
 .detection-results-header {
   padding: 12px 16px;
-  background: rgba(76, 175, 80, 0.15);
-  border-bottom: 1px solid rgba(76, 175, 80, 0.2);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: rgba(76, 175, 80, 0.2);
 }
 
 .detection-results-title {
-  font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
+  font-size: 14px;
   color: #4caf50;
 }
 
@@ -618,11 +495,11 @@ button:active,
 .detection-result-item {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 12px;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .detection-result-item:hover {
@@ -639,34 +516,23 @@ button:active,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
 }
 
 .detection-result-name {
-  font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: #4caf50;
 }
 
 .detection-result-toggle {
   font-size: 12px;
   color: var(--nightclub-text-dim);
-  padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  cursor: pointer;
-  user-select: none;
 }
 
 .detection-result-toggle:hover {
-  background: rgba(255, 255, 255, 0.1);
   color: var(--nightclub-text-light);
 }
 
 .detection-result-data {
-  font-size: 13px;
-  color: var(--nightclub-text-dim);
-  line-height: 1.8;
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.3s ease;
@@ -675,20 +541,22 @@ button:active,
 
 .detection-result-data.expanded {
   grid-template-rows: 1fr;
-  margin-top: 8px;
 }
 
 .detection-result-data-inner {
-  overflow: hidden;
+  min-height: 0;
   padding-top: 8px;
+  margin-top: 8px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre-wrap;
 }
 
 .detection-results-empty {
   text-align: center;
-  padding: 24px 12px;
+  padding: 24px;
   color: var(--nightclub-text-dim);
-  font-size: 13px;
   font-style: italic;
 }
 
@@ -697,21 +565,22 @@ button:active,
   min-height: 80px;
   max-height: 200px;
   overflow-y: auto;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0 0 8px 8px;
 }
 
 .detection-display-empty {
   text-align: center;
-  padding: 24px 12px;
+  padding: 20px;
   color: var(--nightclub-text-dim);
   font-size: 13px;
-  font-style: italic;
 }
 
 .detection-display-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 10px;
   margin-bottom: 8px;
 }
 
@@ -724,45 +593,40 @@ button:active,
   justify-content: space-between;
   align-items: center;
   margin-bottom: 6px;
-  gap: 8px;
 }
 
 .detection-display-item-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--nightclub-text-light);
+  font-weight: 600;
+  color: var(--nightclub-primary);
 }
 
 .detection-display-item-category {
-  font-size: 11px;
+  font-size: 12px;
   padding: 2px 8px;
-  background: rgba(233, 69, 96, 0.25);
-  border-radius: 10px;
-  color: var(--nightclub-primary);
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  color: white;
   white-space: nowrap;
 }
 
 .detection-display-item-remove {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
   width: 24px;
   height: 24px;
-  border-radius: 50%;
-  background: rgba(233, 69, 96, 0.3);
-  border: 1px solid var(--nightclub-primary);
-  color: var(--nightclub-primary);
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  flex-shrink: 0;
 }
 
 .detection-display-item-remove:hover {
-  background: var(--nightclub-primary);
-  color: white;
-  transform: scale(1.1);
+  color: var(--nightclub-primary);
+  transform: scale(1.2);
 }
 
 .detection-display-item-info {
@@ -772,29 +636,29 @@ button:active,
 }
 
 .detection-description {
-  padding: 10px 12px;
-  background: rgba(233, 69, 96, 0.08);
-  border-left: 3px solid var(--nightclub-primary);
+  padding: 12px 16px;
+  background: rgba(255, 193, 7, 0.1);
+  border-left: 3px solid rgba(255, 193, 7, 0.5);
   border-radius: 4px;
   margin-bottom: 16px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
-  color: var(--nightclub-text-dim);
+  color: var(--nightclub-text-light);
 }
 
 .detection-clear-btn {
+  background: rgba(255, 69, 58, 0.2);
+  border: 1px solid rgba(255, 69, 58, 0.5);
+  color: #ff453a;
   padding: 4px 12px;
-  background: rgba(233, 69, 96, 0.2);
-  border: 1px solid var(--nightclub-primary);
-  border-radius: 6px;
-  color: var(--nightclub-primary);
+  border-radius: 4px;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .detection-clear-btn:hover {
-  background: rgba(233, 69, 96, 0.3);
+  background: rgba(255, 69, 58, 0.3);
 }
 
 .detection-targets-grid {
@@ -805,24 +669,35 @@ button:active,
 }
 
 .detection-target-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .detection-target-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(233, 69, 96, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(233, 69, 96, 0.6);
   transform: translateY(-2px);
 }
 
 .detection-target-item.selected {
-  background: rgba(233, 69, 96, 0.15);
+  background: rgba(233, 69, 96, 0.2);
   border-color: var(--nightclub-primary);
-  box-shadow: 0 0 12px rgba(233, 69, 96, 0.3);
+}
+
+.detection-target-item.detected {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: rgba(255, 215, 0, 0.5);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.detection-target-item.detected:hover {
+  transform: none;
+  border-color: rgba(255, 215, 0, 0.5);
 }
 
 .detection-target-header {
@@ -833,124 +708,201 @@ button:active,
 }
 
 .detection-target-name {
-  font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--nightclub-text-light);
 }
 
 .detection-target-category {
   font-size: 11px;
-  padding: 2px 8px;
-  background: rgba(233, 69, 96, 0.2);
-  border-radius: 12px;
-  color: var(--nightclub-primary);
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 .detection-target-info {
   font-size: 12px;
   color: var(--nightclub-text-dim);
   margin-bottom: 8px;
-  line-height: 1.4;
 }
 
 .detection-target-status {
   font-size: 12px;
-  text-align: center;
-  padding: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  color: var(--nightclub-text-dim);
-}
-
-.detection-target-item.selected .detection-target-status {
-  background: rgba(233, 69, 96, 0.3);
   color: var(--nightclub-primary);
-  font-weight: 600;
+  text-align: center;
+  padding: 4px;
+  background: rgba(233, 69, 96, 0.1);
+  border-radius: 4px;
 }
 
 .detection-actions {
   display: flex;
   gap: 12px;
-  margin-top: 16px;
+  justify-content: center;
 }
 
 .detection-action-btn {
   flex: 1;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, var(--nightclub-primary) 0%, #c8365a 100%);
+  max-width: 250px;
+  padding: 12px 24px;
+  background: var(--nightclub-primary);
   border: none;
   border-radius: 8px;
   color: white;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
 }
 
 .detection-action-btn:hover:not(:disabled) {
+  background: #c8365a;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
 }
 
 .detection-action-btn:disabled {
-  opacity: 0.4;
+  background: #555;
   cursor: not-allowed;
-  transform: none;
+  opacity: 0.4;
 }
 
 .detection-action-btn.detection-remove-btn {
-  background: linear-gradient(135deg, #444 0%, #666 100%);
+  background: #444;
 }
 
 .detection-action-btn.detection-remove-btn:hover:not(:disabled) {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: #666;
 }
 
+/* ==================== 移动端适配 */
 @media (max-width: 768px) {
-  .detection-results-content {
-    max-height: 250px;
+  .nightclub-main-panel {
+    width: 95vw;
+    height: 90vh;
   }
 
-  .detection-result-item {
-    padding: 10px;
+  .nightclub-toggle-btn {
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
   }
 
-  .detection-result-name {
-    font-size: 13px;
-  }
-
-  .detection-result-toggle {
+  .nightclub-tab {
     font-size: 11px;
-    padding: 3px 6px;
-  }
-
-  .detection-result-data {
-    font-size: 12px;
-  }
-
-  .detection-result-data-inner {
-    font-size: 12px;
-  }
-
-  .detection-display-content {
-    max-height: 150px;
-  }
-
-  .detection-display-item-header {
-    flex-wrap: wrap;
+    padding: 10px 8px;
   }
 
   .detection-targets-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
   }
-  
-  .detection-actions {
-    flex-direction: column;
+
+  /* 确保按钮可交互 */
+  .nightclub-toggle-btn {
+    pointer-events: auto;
+    z-index: 10002;
   }
 }
-</style>
+
+/* 竖屏优化 */
+@media (max-width: 480px) and (orientation: portrait) {
+  .nightclub-main-panel {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    border: none;
+  }
+
+  .nightclub-toggle-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 22px;
+  }
+
+  .nightclub-tab {
+    font-size: 10px;
+    padding: 8px 4px;
+  }
+
+  /* 确保按钮在小屏幕下也能正常工作 */
+  .nightclub-toggle-btn {
+    z-index: 10002;
+  }
+
+  .detection-targets-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 横屏优化 */
+@media (max-height: 600px) and (orientation: landscape) {
+  .nightclub-main-panel {
+    height: 95vh;
+    max-height: none;
+  }
+
+  .nightclub-content {
+    padding: 10px;
+  }
+}
+
+/* ==================== 全局移动端优化 */
+/* 防止双击缩放 */
+* {
+  touch-action: manipulation;
+}
+
+/* 允许按钮完全控制触摸行为 */
+.nightclub-toggle-btn {
+  touch-action: none !important;
+}
+
+/* 移除触摸高亮 */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* 优化滚动体验（iOS 平滑滚动）*/
+.nightclub-content {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 移动端字体优化 */
+body {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* 支持刘海屏等安全区域 - 仅在小屏幕应用 */
+@supports (padding: max(0px)) {
+  @media (max-width: 480px) {
+    .nightclub-main-panel {
+      padding-top: max(0px, env(safe-area-inset-top));
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
+      padding-left: max(0px, env(safe-area-inset-left));
+      padding-right: max(0px, env(safe-area-inset-right));
+    }
+  }
+}
+
+/* 移除所有按钮和可交互元素的焦点框 */
+button:focus,
+  button:active,
+.nightclub-toggle-btn:focus,
+.nightclub-toggle-btn:active,
+.nightclub-close-btn:focus,
+.nightclub-close-btn:active,
+.nightclub-trainee-item:focus,
+.nightclub-trainee-item:active {
+  outline: none;
+  outline-color: transparent;
+}
+  </style>
 `;
+/* eslint-enable */
 
 // ==================== HTML 结构 ====================
 const html = `
@@ -1003,22 +955,19 @@ let btnDragData: {
   startY: number;
   initialLeft: number;
   initialTop: number;
-  hasDragged: boolean;
 } | null = null;
 let panelDragData: {
   startX: number;
   startY: number;
   initialLeft: number;
   initialTop: number;
-  hasDragged: boolean;
 } | null = null;
 let cachedMVUData: any = null;
 const MAX_RETRIES = 5;
 const RETRY_DELAY = 400;
 let currentRetry = 0;
-const DRAG_THRESHOLD = 5; // 拖动阈值（像素），小于此值视为点击
 let currentPage: 'club' | 'workshop' | 'trainees' | 'archived' | 'detection' = 'club'; // 当前页面
-let selectedDetectionTargets: Set<string> = new Set(); // 选中的侦测对象
+const selectedDetectionTargets: Set<string> = new Set(); // 选中的侦测对象
 
 // ==================== 工具函数 ====================
 function safeGet(data: any, path: string, defaultValue: string = '未知'): string {
@@ -1056,8 +1005,6 @@ function initializeNightclubPlugin(): void {
     targetDoc.getElementById('nightclub-plugin-styles')?.remove();
     // 清理事件
     $(targetDoc).off('.nightclub-plugin');
-    $(targetDoc).off('.nightclub-panel');
-    $(window).off('.nightclub-panel');
   }
 
   // 注入样式
@@ -1099,15 +1046,13 @@ function initializeNightclubPlugin(): void {
 function initializeButtonDrag(targetDoc: Document): void {
   const btn = targetDoc.getElementById('nightclub-toggle-btn');
   const panel = targetDoc.getElementById('nightclub-main-panel');
-  if (!btn || !panel) return;
-
   const $targetDoc = $(targetDoc);
 
   // 拖动开始
   function handleBtnDragStart(clientX: number, clientY: number): boolean {
     if (btnDragData) return false;
 
-    const computedStyle = window.getComputedStyle(btn);
+    const computedStyle = window.getComputedStyle(btn!);
     const currentLeft = parseInt(computedStyle.left) || 0;
     const currentTop = parseInt(computedStyle.top) || 0;
 
@@ -1116,10 +1061,10 @@ function initializeButtonDrag(targetDoc: Document): void {
       startY: clientY,
       initialLeft: currentLeft,
       initialTop: currentTop,
-      hasDragged: false, // 初始化为未拖动
     };
 
-    console.log('🖱️ 准备拖动按钮');
+    btn!.classList.add('dragging');
+    console.log('🖱️ 开始拖动按钮');
     return true;
   }
 
@@ -1130,88 +1075,74 @@ function initializeButtonDrag(targetDoc: Document): void {
     const deltaX = clientX - btnDragData.startX;
     const deltaY = clientY - btnDragData.startY;
 
-    // 检查是否超过拖动阈值
-    if (!btnDragData.hasDragged && (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)) {
-      btnDragData.hasDragged = true;
-      btn.classList.add('dragging');
-      console.log('🖱️ 开始拖动按钮');
-    }
+    let newLeft = btnDragData.initialLeft + deltaX;
+    let newTop = btnDragData.initialTop + deltaY;
 
-    // 只有真正拖动时才移动
-    if (btnDragData.hasDragged) {
-      let newLeft = btnDragData.initialLeft + deltaX;
-      let newTop = btnDragData.initialTop + deltaY;
+    // 限制范围
+    const targetWindow = window.top || window;
+    const maxX = $(targetWindow).width()! - 80;
+    const maxY = $(targetWindow).height()! - 80;
 
-      // 限制范围
-      let targetWindow: Window;
-      try {
-        targetWindow = window.top || window;
-      } catch (e) {
-        targetWindow = window;
-      }
-      const maxX = $(targetWindow).width()! - 80;
-      const maxY = $(targetWindow).height()! - 80;
+    newLeft = Math.max(0, Math.min(newLeft, maxX));
+    newTop = Math.max(0, Math.min(newTop, maxY));
 
-      newLeft = Math.max(0, Math.min(newLeft, maxX));
-      newTop = Math.max(0, Math.min(newTop, maxY));
-
-      btn.style.left = newLeft + 'px';
-      btn.style.top = newTop + 'px';
-    }
+    btn!.style.left = newLeft + 'px';
+    btn!.style.top = newTop + 'px';
   }
 
   // 拖动结束
   function handleBtnDragEnd(clientX: number, clientY: number): void {
     if (!btnDragData) return;
 
-    const wasDragged = btnDragData.hasDragged;
+    btn!.classList.remove('dragging');
 
-    btn.classList.remove('dragging');
+    // 计算拖动距离
+    const deltaX = clientX - btnDragData.startX;
+    const deltaY = clientY - btnDragData.startY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
     // 保存位置
-    if (wasDragged) {
-      const computedStyle = window.getComputedStyle(btn);
-      const currentLeft = parseInt(computedStyle.left) || 0;
-      const currentTop = parseInt(computedStyle.top) || 0;
+    const computedStyle = window.getComputedStyle(btn!);
+    const currentLeft = parseInt(computedStyle.left) || 0;
+    const currentTop = parseInt(computedStyle.top) || 0;
 
-      const position = {
-        left: currentLeft,
-        top: currentTop,
-      };
+    const position = {
+      left: currentLeft,
+      top: currentTop,
+    };
 
-      localStorage.setItem('nightclub-btn-position', JSON.stringify(position));
-      console.log('✅ 按钮拖动结束，保存位置:', position);
-    }
+    localStorage.setItem('nightclub-btn-position', JSON.stringify(position));
+    console.log('✅ 按钮拖动结束，保存位置:', position);
 
     btnDragData = null;
 
-    // 如果没有真正拖动，视为点击
-    if (!wasDragged) {
+    // 如果是点击（移动距离小于5像素），打开/关闭面板
+    if (distance < 5) {
       console.log('🎨 检测到点击，切换面板');
-      togglePanel(targetDoc);
+      panel!.classList.toggle('active');
+      // 打开面板时加载数据
+      if (panel!.classList.contains('active')) {
+        currentRetry = 0; // 重置重试计数器
+        loadNightclubData(targetDoc);
+      }
     }
   }
 
   // 绑定事件
-  $(btn).on('mousedown.nightclub-plugin', function (e) {
+  $(btn!).on('mousedown.nightclub-plugin', function (e) {
     if (handleBtnDragStart(e.clientX, e.clientY)) {
       e.preventDefault();
       e.stopPropagation();
     }
   });
 
-  // 触摸事件需要特殊处理，防止干扰默认滚动
-  btn.addEventListener(
-    'touchstart',
-    function (e: TouchEvent) {
-      const touch = e.touches[0];
-      if (handleBtnDragStart(touch.clientX, touch.clientY)) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    },
-    { passive: false }, // 必须为 false 才能调用 preventDefault
-  );
+  $(btn!).on('touchstart.nightclub-plugin', function (e) {
+    const touch = e.originalEvent!.touches[0];
+    if (handleBtnDragStart(touch.clientX, touch.clientY)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
 
   $targetDoc.on('mousemove.nightclub-plugin', function (e) {
     handleBtnDragMove(e.clientX, e.clientY);
@@ -1240,6 +1171,130 @@ function initializeButtonDrag(targetDoc: Document): void {
   console.log('✅ 按钮拖动功能已初始化');
 }
 
+// ==================== 面板拖动 ====================
+function initializePanelDrag(targetDoc: Document): void {
+  const panel = $('#nightclub-main-panel', targetDoc)[0];
+  const header = $('.nightclub-header', targetDoc)[0];
+  const $targetDoc = $(targetDoc);
+
+  if (!panel || !header) {
+    console.error('❌ 面板或头部元素未找到');
+    return;
+  }
+
+  function handlePanelDragStart(clientX: number, clientY: number): void {
+    console.log('🖱️ 开始拖动面板');
+    const rect = panel!.getBoundingClientRect();
+
+    // 移除 transform 并设置新的 left/top (使用 important 覆盖)
+    panel!.style.setProperty('transform', 'none', 'important');
+    panel!.style.setProperty('left', `${rect.left}px`, 'important');
+    panel!.style.setProperty('top', `${rect.top}px`, 'important');
+
+    panelDragData = {
+      startX: clientX,
+      startY: clientY,
+      initialLeft: rect.left,
+      initialTop: rect.top,
+    };
+    $(panel!).addClass('dragging');
+    $(header!).addClass('dragging');
+    console.log('✅ 面板拖动数据已设置:', panelDragData);
+  }
+
+  function handlePanelDragMove(clientX: number, clientY: number): void {
+    if (!panelDragData) return;
+
+    const deltaX = clientX - panelDragData.startX;
+    const deltaY = clientY - panelDragData.startY;
+    const newLeft = panelDragData.initialLeft + deltaX;
+    const newTop = panelDragData.initialTop + deltaY;
+
+    console.log(`📍 移动面板: deltaX=${deltaX}, deltaY=${deltaY}, newLeft=${newLeft}, newTop=${newTop}`);
+
+    panel!.style.setProperty('left', `${newLeft}px`, 'important');
+    panel!.style.setProperty('top', `${newTop}px`, 'important');
+  }
+
+  function handlePanelDragEnd(): void {
+    console.log('🖱️ 面板拖动结束');
+    if (panelDragData) {
+      // 保存位置
+      const rect = panel!.getBoundingClientRect();
+      const savedPosition = {
+        left: rect.left,
+        top: rect.top,
+      };
+      localStorage.setItem('nightclub-panel-position', JSON.stringify(savedPosition));
+      console.log('✅ 面板拖动结束，保存位置:', savedPosition);
+    }
+
+    panelDragData = null;
+    $(panel!).removeClass('dragging');
+    $(header!).removeClass('dragging');
+  }
+
+  // 鼠标事件
+  $(header!).on('mousedown.nightclub-panel-drag', function (e) {
+    // 如果点击的是关闭按钮，不开始拖动
+    if ($(e.target).closest('#nightclub-close-btn').length > 0) {
+      console.log('⚠️ 点击了关闭按钮，跳过拖动');
+      return;
+    }
+    e.preventDefault();
+    handlePanelDragStart(e.clientX, e.clientY);
+  });
+
+  $targetDoc.on('mousemove.nightclub-panel-drag', function (e) {
+    handlePanelDragMove(e.clientX, e.clientY);
+  });
+
+  $targetDoc.on('mouseup.nightclub-panel-drag', function () {
+    handlePanelDragEnd();
+  });
+
+  // 触摸事件
+  $(header!).on('touchstart.nightclub-panel-drag', function (e) {
+    // 如果点击的是关闭按钮，不开始拖动
+    if ($(e.target).closest('#nightclub-close-btn').length > 0) {
+      console.log('⚠️ 触摸了关闭按钮，跳过拖动');
+      return;
+    }
+    const touch = e.originalEvent!.touches[0];
+    if (touch) {
+      e.preventDefault();
+      handlePanelDragStart(touch.clientX, touch.clientY);
+    }
+  });
+
+  $targetDoc.on('touchmove.nightclub-panel-drag', function (e) {
+    const touch = e.originalEvent!.touches[0];
+    if (touch) {
+      handlePanelDragMove(touch.clientX, touch.clientY);
+    }
+  });
+
+  $targetDoc.on('touchend.nightclub-panel-drag touchcancel.nightclub-panel-drag', function () {
+    handlePanelDragEnd();
+  });
+
+  // 恢复保存的位置
+  const savedPos = localStorage.getItem('nightclub-panel-position');
+  if (savedPos) {
+    try {
+      const pos = JSON.parse(savedPos);
+      panel!.style.setProperty('transform', 'none', 'important');
+      panel!.style.setProperty('left', `${pos.left}px`, 'important');
+      panel!.style.setProperty('top', `${pos.top}px`, 'important');
+      console.log('✅ 已恢复面板位置:', pos);
+    } catch (e) {
+      console.error('❌ 恢复面板位置失败:', e);
+    }
+  }
+
+  console.log('✅ 面板拖动功能已初始化');
+}
+
 // ==================== 面板系统 ====================
 function initializePanelSystem(targetDoc: Document): void {
   const closeBtn = targetDoc.getElementById('nightclub-close-btn');
@@ -1256,7 +1311,7 @@ function initializePanelSystem(targetDoc: Document): void {
   // 初始化标签页切换
   initializeTabSwitching(targetDoc);
 
-  // 初始化面板拖动功能
+  // 初始化面板拖动
   initializePanelDrag(targetDoc);
 
   console.log('✅ 面板系统已初始化');
@@ -1297,212 +1352,12 @@ function initializeTabSwitching(targetDoc: Document): void {
   console.log('✅ 标签页切换已初始化');
 }
 
-// ==================== 面板拖动功能 ====================
-function initializePanelDrag(targetDoc: Document): void {
-  const panel = targetDoc.getElementById('nightclub-main-panel');
-  const header = targetDoc.getElementById('nightclub-close-btn')?.parentElement;
+// ==================== 面板拖动功能（已禁用） ====================
+// function initializePanelDrag(targetDoc: Document): void {
+//   面板拖动功能已移除，专注于按钮拖动优化
+// }
 
-  if (!panel || !header) return;
-
-  const $targetDoc = $(targetDoc);
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-  // 从 localStorage 恢复面板位置
-  function restorePanelPosition() {
-    try {
-      const saved = localStorage.getItem('nightclub-panel-position');
-      if (saved) {
-        const pos = JSON.parse(saved);
-        // 检查是否在移动端竖屏模式
-        const isPortraitMobile = window.innerWidth <= 480 && window.innerWidth < window.innerHeight;
-
-        if (!isPortraitMobile) {
-          panel.style.transform = 'none';
-          panel.style.left = pos.left + 'px';
-          panel.style.top = pos.top + 'px';
-          console.log('📍 恢复面板位置:', pos);
-        }
-      }
-    } catch (e) {
-      console.warn('⚠️ 恢复面板位置失败');
-    }
-  }
-
-  // 拖动开始
-  function handlePanelDragStart(clientX: number, clientY: number): boolean {
-    if (panelDragData) return false;
-
-    // 检查是否在移动端竖屏模式（全屏模式不允许拖动）
-    const isPortraitMobile = window.innerWidth <= 480 && window.innerWidth < window.innerHeight;
-    if (isPortraitMobile) return false;
-
-    const rect = panel.getBoundingClientRect();
-
-    panelDragData = {
-      startX: clientX,
-      startY: clientY,
-      initialLeft: rect.left,
-      initialTop: rect.top,
-      hasDragged: false, // 初始化为未拖动
-    };
-
-    console.log('🖱️ 准备拖动面板');
-    return true;
-  }
-
-  // 拖动移动
-  function handlePanelDragMove(clientX: number, clientY: number): void {
-    if (!panelDragData) return;
-
-    const deltaX = clientX - panelDragData.startX;
-    const deltaY = clientY - panelDragData.startY;
-
-    // 检查是否超过拖动阈值
-    if (!panelDragData.hasDragged && (Math.abs(deltaX) > DRAG_THRESHOLD || Math.abs(deltaY) > DRAG_THRESHOLD)) {
-      panelDragData.hasDragged = true;
-      panel.classList.add('dragging');
-      header.classList.add('dragging');
-      console.log('🖱️ 开始拖动面板');
-    }
-
-    // 只有真正拖动时才移动
-    if (panelDragData.hasDragged) {
-      let newLeft = panelDragData.initialLeft + deltaX;
-      let newTop = panelDragData.initialTop + deltaY;
-
-      // 获取面板尺寸
-      const panelWidth = panel.offsetWidth;
-      const panelHeight = panel.offsetHeight;
-
-      // 限制范围（至少保留 50px 在视口内）
-      let targetWindow: Window;
-      try {
-        targetWindow = window.top || window;
-      } catch (e) {
-        targetWindow = window;
-      }
-      const viewportWidth = $(targetWindow).width()!;
-      const viewportHeight = $(targetWindow).height()!;
-
-      newLeft = Math.max(-panelWidth + 50, Math.min(newLeft, viewportWidth - 50));
-      newTop = Math.max(0, Math.min(newTop, viewportHeight - 50));
-
-      // 移除 transform，使用 left/top 定位
-      panel.style.transform = 'none';
-      panel.style.left = newLeft + 'px';
-      panel.style.top = newTop + 'px';
-    }
-  }
-
-  // 拖动结束
-  function handlePanelDragEnd(): void {
-    if (!panelDragData) return;
-
-    const wasDragged = panelDragData.hasDragged;
-
-    panel.classList.remove('dragging');
-    header.classList.remove('dragging');
-
-    // 保存位置
-    if (wasDragged) {
-      const rect = panel.getBoundingClientRect();
-      const position = {
-        left: rect.left,
-        top: rect.top,
-      };
-
-      localStorage.setItem('nightclub-panel-position', JSON.stringify(position));
-      console.log('✅ 面板拖动结束，保存位置:', position);
-    }
-
-    panelDragData = null;
-  }
-
-  // 绑定鼠标事件
-  $(header).on('mousedown.nightclub-panel', function (e) {
-    // 不处理关闭按钮的点击
-    if ((e.target as HTMLElement).closest('.nightclub-close-btn')) {
-      return;
-    }
-
-    if (handlePanelDragStart(e.clientX, e.clientY)) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
-
-  // 绑定触摸事件（使用原生事件以支持 passive 选项）
-  header.addEventListener(
-    'touchstart',
-    function (e: TouchEvent) {
-      // 不处理关闭按钮的触摸
-      if ((e.target as HTMLElement).closest('.nightclub-close-btn')) {
-        return;
-      }
-
-      const touch = e.touches[0];
-      if (handlePanelDragStart(touch.clientX, touch.clientY)) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    },
-    { passive: false }, // 必须为 false 才能调用 preventDefault
-  );
-
-  $targetDoc.on('mousemove.nightclub-panel', function (e) {
-    handlePanelDragMove(e.clientX, e.clientY);
-    if (panelDragData) e.preventDefault();
-  });
-
-  $targetDoc.on('touchmove.nightclub-panel', function (e) {
-    const touch = e.originalEvent!.touches[0];
-    handlePanelDragMove(touch.clientX, touch.clientY);
-    if (panelDragData) e.preventDefault();
-  });
-
-  $targetDoc.on('mouseup.nightclub-panel', function () {
-    handlePanelDragEnd();
-  });
-
-  $targetDoc.on('touchend.nightclub-panel touchcancel.nightclub-panel', function () {
-    handlePanelDragEnd();
-  });
-
-  // 窗口大小改变时重置位置（如果切换到移动端竖屏）
-  $(window).on('resize.nightclub-panel orientationchange.nightclub-panel', function () {
-    const isPortraitMobile = window.innerWidth <= 480 && window.innerWidth < window.innerHeight;
-    if (isPortraitMobile) {
-      // 移动端竖屏模式，重置为全屏
-      panel.style.transform = 'none';
-      panel.style.left = '0';
-      panel.style.top = '0';
-    } else {
-      // 非移动端竖屏，恢复保存的位置或居中
-      restorePanelPosition();
-    }
-  });
-
-  // 恢复位置
-  restorePanelPosition();
-
-  console.log('✅ 面板拖动功能已初始化');
-}
-
-function togglePanel(targetDoc: Document): void {
-  const panel = targetDoc.getElementById('nightclub-main-panel');
-  if (!panel) return;
-
-  const isActive = panel.classList.contains('active');
-
-  if (isActive) {
-    panel.classList.remove('active');
-  } else {
-    panel.classList.add('active');
-    // 打开面板时加载数据
-    currentRetry = 0;
-    loadNightclubData(targetDoc);
-  }
-}
+// togglePanel 函数已移除，面板切换现在直接在按钮拖动结束时处理
 
 // ==================== 数据加载 ====================
 async function loadNightclubData(targetDoc: Document): Promise<void> {
@@ -1731,22 +1586,15 @@ function renderWorkshopPage(data: NightclubData): string {
     `;
 
     orders.forEach(order => {
-      const orderNum = order.订单编号 || '未知';
-      const client = order.客户代号 || '未知';
+      const client = order.委托人 || '未知委托人';
       const type = order.需求类型 || '';
       const requirements = order.具体要求 || '';
       const deadline = order.截止日期 || '';
-      const status = order.状态 || '待处理';
 
       html += `
         <div class="nightclub-trainee-item">
           <div class="nightclub-trainee-header">
-            <span class="nightclub-trainee-name">${orderNum}</span>
-            <span class="nightclub-trainee-status">${status}</span>
-          </div>
-          <div class="nightclub-info-row">
-            <span class="nightclub-info-label">客户</span>
-            <span class="nightclub-info-value">${client}</span>
+            <span class="nightclub-trainee-name">${client}</span>
           </div>
           ${
             type
@@ -1821,22 +1669,18 @@ function renderTraineesPage(data: NightclubData): string {
 
       trainees.forEach(trainee => {
         const name = trainee.姓名 || '未知';
-        const code = trainee.编号 || '';
         const age = trainee.基本信息?.年龄 || '';
         const origin = trainee.基本信息?.来源 || '';
         const appearance = trainee.基本信息?.原始外貌 || '';
-        const days = trainee.基本信息?.培养天数 || '0';
         const progress = typeof trainee.培养进度 === 'number' ? trainee.培养进度 : trainee.培养进度 || '0';
         const order = trainee.定制信息?.对应订单 || '无';
         const target = trainee.定制信息?.目标形象 || '未定';
         const requirements = trainee.定制信息?.特殊要求 || '';
-        const status = trainee.当前状态 || '培训中';
 
         html += `
           <div class="nightclub-trainee-item">
             <div class="nightclub-trainee-header">
-              <span class="nightclub-trainee-name">${name}${code ? ` (${code})` : ''}</span>
-              <span class="nightclub-trainee-status">${status}</span>
+              <span class="nightclub-trainee-name">${name}</span>
             </div>
             <div class="nightclub-info-row">
               <span class="nightclub-info-label">年龄 / 来源</span>
@@ -1851,10 +1695,6 @@ function renderTraineesPage(data: NightclubData): string {
             </div>`
                 : ''
             }
-            <div class="nightclub-info-row">
-              <span class="nightclub-info-label">培养天数</span>
-              <span class="nightclub-info-value">${days} 天</span>
-            </div>
             <div class="nightclub-info-row">
               <span class="nightclub-info-label">培养进度</span>
               <span class="nightclub-info-value">${progress}%</span>
@@ -1918,49 +1758,20 @@ function renderArchivedPage(data: NightclubData): string {
       `;
 
       archived.forEach(artist => {
-        const code = artist.编号 || '';
-        const name = artist.艺名 || '未知';
-        const type = artist.类型 || '未知';
-        const age = artist.年龄 || '';
-        const origin = artist.来源 || '';
-        const features = artist.特征 || '';
-        const currentStatus = artist.当前状态 || '';
-        const evaluation = artist.评价 || '';
+        const realName = artist.姓名 || '';
+        const stageName = artist.艺名 || '未知';
+        const description = artist.简述 || '';
 
         html += `
           <div class="nightclub-trainee-item">
             <div class="nightclub-trainee-header">
-              <span class="nightclub-trainee-name">${name}${code ? ` (${code})` : ''}</span>
-              <span class="nightclub-trainee-status">${type}</span>
-            </div>
-            <div class="nightclub-info-row">
-              <span class="nightclub-info-label">年龄 / 来源</span>
-              <span class="nightclub-info-value">${age ? age + '岁' : ''} ${age && origin ? '/' : ''} ${origin}</span>
+              <span class="nightclub-trainee-name">${stageName}${realName ? ` (${realName})` : ''}</span>
             </div>
             ${
-              features
+              description
                 ? `
-            <div class="nightclub-info-row">
-              <span class="nightclub-info-label">特征</span>
-              <span class="nightclub-info-value">${features}</span>
-            </div>`
-                : ''
-            }
-            ${
-              currentStatus
-                ? `
-            <div class="nightclub-info-row">
-              <span class="nightclub-info-label">当前状态</span>
-              <span class="nightclub-info-value">${currentStatus}</span>
-            </div>`
-                : ''
-            }
-            ${
-              evaluation
-                ? `
-            <div class="nightclub-info-row">
-              <span class="nightclub-info-label">评价</span>
-              <span class="nightclub-info-value">${evaluation}</span>
+            <div class="archived-description">
+              <span class="archived-description-label">简述：</span><span class="archived-description-text">${description}</span>
             </div>`
                 : ''
             }
@@ -2014,7 +1825,7 @@ function renderDetectionPage(data: NightclubData): string {
         availableTargets.push({
           name: artist.艺名,
           category: '已归档',
-          info: `类型: ${artist.类型 || '未知'} | 状态: ${artist.当前状态 || '未知'}`,
+          info: artist.简述 || '暂无简述',
         });
       }
     });
@@ -2088,7 +1899,6 @@ function renderDetectionPage(data: NightclubData): string {
                           <span class="detection-display-item-category">${target.category}</span>
                           <button class="detection-display-item-remove" data-remove-target="${target.name}">×</button>
                         </div>
-                        <div class="detection-display-item-info">${target.info}</div>
       </div>
     `;
                     })
@@ -2106,14 +1916,17 @@ function renderDetectionPage(data: NightclubData): string {
 
   availableTargets.forEach(target => {
     const isSelected = selectedDetectionTargets.has(target.name);
+    const hasDetectionData = detectionData.hasOwnProperty(target.name);
+    const statusClass = hasDetectionData ? 'detected' : isSelected ? 'selected' : '';
+    const statusText = hasDetectionData ? '🔍 已侦测' : isSelected ? '✓ 已选择' : '点击选择';
+
     html += `
-      <div class="detection-target-item ${isSelected ? 'selected' : ''}" data-target-name="${target.name}">
+      <div class="detection-target-item ${statusClass}" data-target-name="${target.name}" ${hasDetectionData ? 'data-detected="true"' : ''}>
         <div class="detection-target-header">
           <span class="detection-target-name">${target.name}</span>
           <span class="detection-target-category">${target.category}</span>
         </div>
-        <div class="detection-target-info">${target.info}</div>
-        <div class="detection-target-status">${isSelected ? '✓ 已选择' : '点击选择'}</div>
+        <div class="detection-target-status">${statusText}</div>
       </div>
     `;
   });
@@ -2125,7 +1938,7 @@ function renderDetectionPage(data: NightclubData): string {
           <button class="detection-action-btn" id="detection-start-btn" ${selectedDetectionTargets.size === 0 ? 'disabled' : ''}>
             🔍 开始侦测
           </button>
-          <button class="detection-action-btn detection-remove-btn" id="detection-remove-btn" ${selectedDetectionTargets.size === 0 ? 'disabled' : ''}>
+          <button class="detection-action-btn detection-remove-btn" id="detection-remove-btn" ${detectionCount === 0 ? 'disabled' : ''}>
             🗑️ 删除侦测数据
           </button>
         </div>
@@ -2158,6 +1971,14 @@ function initializeDetectionEvents(targetDoc: Document): void {
   targetItems.forEach(item => {
     item.addEventListener('click', function (e) {
       e.stopPropagation();
+
+      // 检查是否已有侦测数据，如果有则不响应点击
+      const isDetected = (this as HTMLElement).getAttribute('data-detected') === 'true';
+      if (isDetected) {
+        console.log('⚠️ 该对象已有侦测数据，无法选择');
+        return;
+      }
+
       const targetName = (this as HTMLElement).getAttribute('data-target-name');
       console.log('👆 点击了卡片:', targetName);
       if (!targetName) return;
@@ -2227,14 +2048,7 @@ function initializeDetectionEvents(targetDoc: Document): void {
         }
       });
 
-      command += `\n\n请侦测以下部位（每个部位描述后用换行符分割）：1. 整体情况 2. 神情 3. 嘴部 4. 胸部 5. 乳头 6. 乳晕 7. 屁股 8. 小穴 9. 屁眼\n\n`;
-
-      targets.forEach((target, index) => {
-        command += `_.set('侦测数据.${target}[0]', '侦测数据', '整体情况：...\\n神情：...\\n嘴部：...\\n胸部：...\\n乳头：...\\n乳晕：...\\n屁股：...\\n小穴：...\\n屁眼：...')`;
-        if (index < targets.length - 1) {
-          command += `\n`;
-        }
-      });
+      command += `\n\n请侦测以下部位（每个部位描述后用换行符分割）：1. 整体情况 2. 神情 3. 嘴部 4. 胸部 5. 乳头 6. 乳晕 7. 屁股 8. 小穴 9. 屁眼`;
 
       fillCommand(command);
     });
@@ -2244,22 +2058,21 @@ function initializeDetectionEvents(targetDoc: Document): void {
   const removeBtn = targetDoc.getElementById('detection-remove-btn');
   if (removeBtn) {
     removeBtn.addEventListener('click', () => {
-      if (selectedDetectionTargets.size === 0) return;
+      // 获取所有已侦测的对象
+      const detectionData = cachedMVUData?.侦测数据 || {};
+      const detectedTargets = Object.keys(detectionData);
 
-      const targets = Array.from(selectedDetectionTargets);
+      if (detectedTargets.length === 0) return;
+
       let command = `删除以下对象的侦测数据：\n\n`;
 
-      targets.forEach(target => {
+      detectedTargets.forEach(target => {
         command += `_.remove('侦测数据', '${target}')\n`;
       });
 
       fillCommand(command);
 
-      // 清空选择
-      selectedDetectionTargets.clear();
-      if (cachedMVUData) {
-        renderNightclubData(targetDoc, cachedMVUData);
-      }
+      // 不立即清空选择和重新渲染，等下回合检测到数据被删除后再清理
     });
   }
 }

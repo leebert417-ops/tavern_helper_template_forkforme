@@ -4,124 +4,89 @@
 </status_current_variables>
 
 rule:
-  - You should output the update analysis in the end of the next reply
-  - Use `_.set('path', 'old', 'new')` for direct assignment or state changes
-  - Use `_.add('path', value)` to add or subtract a numerical value
-  - Use `_.insert('path', 'item_or_key', 'value')` to add an element to an array or object
-  - Use `_.remove('path', 'item_or_key')` to remove an element from an array or object
-  - When using _.set with objects or arrays, do NOT wrap them in quotes - use direct object/array literals
-  - When using _.set with strings, DO wrap them in quotes
-  - When using _.set with numbers or booleans, do NOT use quotes
-  - Only update variables that need to be changed based on story progress
-  - In Analysis section, list ALL relevant variables but mark most as 'No' to show careful consideration
+  - Output update analysis at reply end
+  - _.set('path', 'old', 'new') for direct assignment/state changes
+  - _.add('path', value) to add/subtract numerical value
+  - _.insert('path', 'item_or_key', 'value') to add element to array/object
+  - _.remove('path', 'item_or_key') to remove element from array/object
+  - Objects/arrays: NO quotes, use direct literals. Strings: USE quotes. Numbers/booleans: NO quotes
+  - Only update variables needing change based on story progress
+  - In Analysis: list ALL relevant variables, mark most as 'No' to show consideration
+  - 同一客户多个需求合并到一个订单，不允许重复委托人
+  - 不允许姓名重复的培养对象，同一人只能一个培养记录
+  - 不允许艺名重复的归档记录，同一艺名只能一个归档
 
 format: |-
   <UpdateVariable>
     <Analysis>
-      ${variable_path}: ${Whether the variable should be updated: 'Yes' or 'No'}
+      ${variable_path}: ${Yes or No}
       ...
     </Analysis>
-    ${command_expression}; // ${brief reason for change}
+    ${command_expression}; // ${brief reason}
     ...
   </UpdateVariable>
 
 example: |-
-  示例1 - 时间推进与日常更新：
+  示例1 - 时间推进+自动培养：
   <UpdateVariable>
     <Analysis>
-      时间信息.当前日期: No
       时间信息.当前时间: Yes
-      时间信息.星期: No
       时间信息.营业状态: Yes
-      地点信息.当前位置: No
-      夜总会经营.VIP客户数: No
-      工坊培养对象.培养列表[0].基本信息.培养天数: Yes
       工坊培养对象.培养列表[0].培养进度: Yes
+      工坊培养对象.培养列表[1].培养进度: Yes
     </Analysis>
-    _.set('时间信息.当前时间', '20:30', '23:45'); // 时间流逝，深夜时分
-    _.set('时间信息.营业状态', '营业中', '即将打烊'); // 接近打烊时间
-    _.add('工坊培养对象.培养列表[0].基本信息.培养天数', 1); // 新的一天，培养天数增加
-    _.add('工坊培养对象.培养列表[0].培养进度', 3); // 今日培训有所进展
+    _.set('时间信息.当前时间', '20:30', '23:45'); // 时间流逝深夜
+    _.set('时间信息.营业状态', '营业中', '即将打烊'); // 接近打烊
+    _.add('工坊培养对象.培养列表[0].培养进度', 2); // 自动进度提升
+    _.add('工坊培养对象.培养列表[1].培养进度', 3); // 自动进度提升
   </UpdateVariable>
 
-  示例2 - 接收新订单：
-  <UpdateVariable>
-    <Analysis>
-      夜总会经营.待处理订单: Yes
-      地点信息.当前位置: Yes
-    </Analysis>
-    _.set('地点信息.当前位置', '舞厅', '顶层办公室'); // {{user}}回到办公室处理订单
-    _.insert('夜总会经营.待处理订单', {订单编号: 'VIP-2024-003', 客户代号: '李总', 需求类型: '高端名媛', 具体要求: '28岁左右，气质优雅，擅长商务社交', 截止日期: '2024年6月15日', 状态: '待处理'}); // 接收李总的新订单
-  </UpdateVariable>
-
-  示例3 - 新素人入工坊：
+  示例2 - 新素人入工坊：
   <UpdateVariable>
     <Analysis>
       工坊培养对象.当前培养人数: Yes
       工坊培养对象.培养列表: Yes
-      夜总会经营.待处理订单[0].状态: Yes
+      夜总会经营.待处理订单: Yes
     </Analysis>
-    _.add('工坊培养对象.当前培养人数', 1); // 新素人入工坊，人数增加
-    _.insert('工坊培养对象.培养列表', {编号: 'T006', 姓名: '张婷', 基本信息: {年龄: 22, 原始外貌: '清秀文静', 来源: '债务纠纷', 培养天数: 0}, 培养进度: 0, 定制信息: {对应订单: 'VIP-2024-003', 目标形象: '高端名媛', 特殊要求: '气质优雅，擅长社交'}, 当前状态: '新入工坊', 备注: ['$__META_EXTENSIBLE__$']}); // 添加新培养对象张婷
-    _.set('夜总会经营.待处理订单[0].状态', '待处理', '培养中'); // 订单开始执行
+    _.add('工坊培养对象.当前培养人数', 1); // 新素人人数增加
+    _.insert('工坊培养对象.培养列表', {姓名: '张婷', 基本信息: {年龄: 22, 原始外貌: '清秀文静', 来源: '债务纠纷'}, 培养进度: 0, 定制信息: {对应订单: '李总', 目标形象: '高端名媛', 特殊要求: '气质优雅擅长社交'}, 备注: ['$__META_EXTENSIBLE__$']}); // 添加张婷
+    _.remove('夜总会经营.待处理订单', 0); // 订单开始执行移除
   </UpdateVariable>
 
-  示例4 - 培养对象日常训练：
+  示例3 - {{user}}明确指令额外培训：
   <UpdateVariable>
     <Analysis>
       工坊培养对象.培养列表[0].培养进度: Yes
-      工坊培养对象.培养列表[0].当前状态: Yes
       工坊培养对象.培养列表[0].备注: Yes
-      工坊培养对象.培养列表[0].基本信息.培养天数: Yes
     </Analysis>
-    _.add('工坊培养对象.培养列表[0].基本信息.培养天数', 1); // 培养天数增加
-    _.add('工坊培养对象.培养列表[0].培养进度', 5); // 今日完成社交礼仪培训，进度提升
-    _.set('工坊培养对象.培养列表[0].当前状态', '基础培训中', '才艺培养阶段'); // 进入新的培养阶段
-    _.insert('工坊培养对象.培养列表[0].备注', '3月16日：社交礼仪课程表现优秀，学习能力强'); // 记录培养过程
+    _.add('工坊培养对象.培养列表[0].培养进度', 5); // {{user}}指令专项培训额外进度(叠加自动)
+    _.insert('工坊培养对象.培养列表[0].备注', '3月16日：按{{user}}指令完成社交礼仪专项课程表现优秀'); // 记录过程
   </UpdateVariable>
 
-  示例5 - 培养对象结业归档：
+  示例4 - 培养对象结业归档：
   <UpdateVariable>
     <Analysis>
       工坊培养对象.当前培养人数: Yes
       工坊培养对象.培养列表: Yes
       已归档.总数: Yes
       已归档.档案列表: Yes
-      夜总会经营.待处理订单[0].状态: Yes
     </Analysis>
-    _.add('工坊培养对象.当前培养人数', -1); // 培养对象结业，人数减少
-    _.remove('工坊培养对象.培养列表', 0); // 移除已结业的培养对象
+    _.add('工坊培养对象.当前培养人数', -1); // 结业人数减少
+    _.remove('工坊培养对象.培养列表', 0); // 移除已结业对象
     _.add('已归档.总数', 1); // 归档总数增加
-    _.insert('已归档.档案列表', {编号: 'A006', 艺名: '雅琪', 类型: '名媛型', 年龄: 22, 来源: '债务纠纷', 特征: '气质优雅，社交能力强', 当前状态: '被VIP客户包养', 评价: '包养客户评价：举止优雅得体，商务场合表现完美，完全符合期望'}); // 添加到归档列表
-    _.set('夜总会经营.待处理订单[0].状态', '培养中', '已完成'); // 订单完成
+    _.insert('已归档.档案列表', {姓名: '张婷', 艺名: '雅琪', 简述: '由债务纠纷方式加入，现为VIP客户包养，客户评价优秀'}); // 添加归档
   </UpdateVariable>
 
-  示例6 - 对象侦测（添加侦测数据）：
+  示例5 - 对象侦测管理：
   <UpdateVariable>
     <Analysis>
       侦测数据: Yes
     </Analysis>
-    _.insert('侦测数据', '云舒', '整体情况：身材修长匀称，体态优雅\n神情：眼神温柔明亮，嘴角含笑\n嘴部：唇色红润，唇形饱满\n胸部：D罩杯，饱满圆润，挺拔\n乳头：粉嫩，适中大小，微微凸起\n乳晕：淡粉色，直径约3cm\n屁股：圆润挺翘，紧致有弹性\n小穴：粉嫩紧致，湿润适中\n屁眼：粉色，紧致'); // 对云舒进行详细身体侦测
+    _.insert('侦测数据', '云舒', '整体情况：身材修长匀称，体态优雅\n神情：眼神温柔明亮，嘴角含笑\n嘴部：唇色红润，唇形饱满\n胸部：D罩杯，饱满圆润，挺拔\n乳头：粉嫩，适中大小，微微凸起\n乳晕：淡粉色，直径约3cm\n屁股：圆润挺翘，紧致有弹性\n小穴：粉嫩紧致，湿润适中\n屁眼：粉色，紧致'); // 对云舒侦测
+    _.remove('侦测数据', '云舒'); // 侦测结束删除
   </UpdateVariable>
 
-  示例7 - 更新已有侦测数据：
-  <UpdateVariable>
-    <Analysis>
-      侦测数据.云舒: Yes
-    </Analysis>
-    _.set('侦测数据.云舒', '整体情况：身材修长匀称，体态优雅...', '整体情况：身材修长匀称，体态舒展\n神情：眼神妩媚，嘴角微翘\n嘴部：唇色深红，唇形性感\n胸部：D罩杯，饱满挺立\n乳头：粉红，微微挺立\n乳晕：淡粉色，略微充血\n屁股：圆润挺翘，富有弹性\n小穴：湿润紧致，微微湿滑\n屁眼：粉色，略微放松'); // 重新侦测云舒的身体状态
-  </UpdateVariable>
-
-  示例8 - 删除侦测数据：
-  <UpdateVariable>
-    <Analysis>
-      侦测数据: Yes
-    </Analysis>
-    _.remove('侦测数据', '云舒'); // 侦测结束，删除云舒的侦测数据
-    _.remove('侦测数据', '云卷'); // 侦测结束，删除云卷的侦测数据
-  </UpdateVariable>
-
-  示例9 - 综合更新（多种操作组合）：
+  示例6 - 综合更新：
   <UpdateVariable>
     <Analysis>
       时间信息.当前日期: Yes
@@ -133,12 +98,22 @@ example: |-
       工坊培养对象.培养列表[0].培养进度: Yes
       工坊培养对象.培养列表[1].备注: Yes
     </Analysis>
-    _.set('时间信息.当前日期', '2024年3月15日', '2024年3月16日'); // 新的一天到来
-    _.set('时间信息.当前时间', '03:00', '09:00'); // 清晨时分
-    _.set('时间信息.星期', '星期五', '星期六'); // 周末到来
-    _.set('时间信息.营业状态', '营业中', '准备中'); // 准备今晚营业
-    _.set('地点信息.当前位置', '工坊培训室', '顶层办公室'); // {{user}}回到办公室
-    _.add('夜总会经营.VIP客户数', 2); // 新增2位VIP客户
-    _.add('工坊培养对象.培养列表[0].培养进度', 8); // 张婷完成重要培训，进度大幅提升
-    _.insert('工坊培养对象.培养列表[1].备注', '3月16日：开始形体改造疗程，预计持续2周'); // 记录第二位培养对象的进展
+    _.set('时间信息.当前日期', '2024年3月15日', '2024年3月16日'); // 新一天
+    _.set('时间信息.当前时间', '03:00', '09:00'); // 清晨
+    _.set('时间信息.星期', '星期五', '星期六'); // 周末
+    _.set('时间信息.营业状态', '营业中', '准备中'); // 准备营业
+    _.set('地点信息.当前位置', '工坊培训室', '顶层办公室'); // 回办公室
+    _.add('夜总会经营.VIP客户数', 2); // 新增2位VIP
+    _.add('工坊培养对象.培养列表[0].培养进度', 8); // 张婷完成重要培训进度大幅提升
+    _.insert('工坊培养对象.培养列表[1].备注', '3月16日：开始形体改造疗程预计持续2周'); // 记录第二位进展
+  </UpdateVariable>
+
+  示例7 - 更新快速回复选项：
+  <UpdateVariable>
+    <Analysis>
+      快速回复.当前回复: Yes
+      快速回复.快进回复: Yes
+    </Analysis>
+    _.set('快速回复.当前回复', [{标签: '关注地上生意', 内容: '接起电话，询问云舒关于张副秘书长的详细安排。\n\n「薇薇那边准备得怎么样了？张副的喜好都摸清楚了吗？今晚的服务不能有任何闪失。」'}, {标签: '关注地下工坊', 内容: '看向云卷，对工坊的情况更感兴趣。\n\n「工坊确实安静太久了。最近有什么合适的\'原材料\'吗？或者……该考虑接一些特殊订单了。」'}], [{标签: '同意安排', 内容: '我微笑着表示认可，让云舒和云卷按计划执行。\n\n「很好，就按你们说的办。我相信你们的专业判断。」'}, {标签: '提出异议', 内容: '我摇头否定，对当前的安排不太满意。\n\n「这个方案还不够完善，我们需要重新考虑一下细节。」'}]); // 根据当前对话更新回复选项
+    _.set('快速回复.快进回复', [{标签: '今晚服务中', 内容: '（快进到深夜时分，至尊包厢中张副秘书长的接待正在进行，薇薇的表现如何？会所的氛围怎样？）'}, {标签: '数日后总结', 内容: '（快进到三天后的晨间例会时分，云舒和云卷正向我汇报这几天的营业情况、VIP客户反馈以及工坊的最新动向）'}], [{标签: '跳至深夜', 内容: '（夜色更深，时间来到了凌晨2点，夜总会即将打烊，我在办公室处理今晚的收尾工作）'}, {标签: '跳至次日', 内容: '（第二天清晨，阳光透过落地窗洒进办公室，新的一天开始了，云舒带来了昨晚的营业报表和客户反馈）'}]); // 根据剧情进展更新快进选项
   </UpdateVariable>

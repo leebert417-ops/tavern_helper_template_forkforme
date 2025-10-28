@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>江畔夜总会 - 快速回复</title>
+    <style>
+      :root {
+        --nightclub-primary: #e94560;
+        --nightclub-secondary: #0f3460;
+        --nightclub-bg-dark: #16213e;
+        --nightclub-bg-mid: #1a2332;
+        --nightclub-bg-light: #2a3447;
+        --nightclub-text-light: #e4e7eb;
+        --nightclub-text-dim: #a0a8b5;
+        --nightclub-border: rgba(255, 255, 255, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+        background-color: transparent;
+        color: var(--nightclub-text-light);
+        padding: 10px;
+        margin: 0;
+      }
+
+      .container {
+        max-width: 100%;
+        margin: 0 auto;
+      }
+
+      .card {
+        background-color: var(--nightclub-bg-light);
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .card-header {
+        color: var(--nightclub-primary);
+        font-size: 1.1em;
+        font-weight: bold;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .card.collapsed .card-header {
+        padding-bottom: 15px;
+      }
+
+      .card-content {
+        display: block;
+        padding: 0 15px 15px 15px;
+      }
+
+      .card.collapsed .card-content {
+        display: none;
+      }
+
+      .collapse-toggle {
+        font-size: 1.2em;
+        transform-origin: center;
+        transition: transform 0.3s ease;
+      }
+
+      .card.collapsed .collapse-toggle {
+        transform: rotate(-90deg);
+      }
+
+      .replies-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+      }
+
+      .reply-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--nightclub-border);
+        border-radius: 8px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .reply-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--nightclub-primary);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+      }
+
+      .reply-card:hover {
+        border-color: var(--nightclub-primary);
+        background: rgba(233, 69, 96, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .reply-card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .reply-card:active {
+        transform: translateY(0);
+      }
+
+      .reply-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--nightclub-primary);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .reply-label .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        background: var(--nightclub-primary);
+        border-radius: 4px;
+        font-size: 11px;
+        color: white;
+      }
+
+      .reply-content {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--nightclub-text-light);
+      }
+
+      .loading {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--nightclub-text-dim);
+      }
+
+      .loading-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .error {
+        background: rgba(255, 69, 58, 0.1);
+        border: 1px solid rgba(255, 69, 58, 0.3);
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        color: #ff453a;
+      }
+
+      .error-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--nightclub-primary);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--nightclub-text-dim);
+      }
+
+      .empty-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+      }
+
+      /* 移动端适配 */
+      @media (max-width: 1024px) {
+        .replies-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .replies-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header h1 {
+          font-size: 24px;
+        }
+
+        .reply-card {
+          padding: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card collapsed" id="quick-reply-card">
+        <div class="card-header" onclick="toggleCard()">
+          <span>🌙 江畔夜总会 - 快速回复</span>
+          <span id="collapse-toggle" class="collapse-toggle">▼</span>
+        </div>
+        <div class="card-content" id="content">
+          <div class="loading">
+            <div class="loading-icon">⏳</div>
+            <div>正在加载回复选项...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+      // ==================== 工具函数 ====================
+      function safeGet(obj, path, defaultValue = null) {
+        if (!obj) return defaultValue;
+        const keys = path.split('.');
+        let current = obj;
+        for (const key of keys) {
+          if (current === undefined || current === null || typeof current !== 'object') {
+            return defaultValue;
+          }
+          current = current[key];
+        }
+        return current === undefined || current === null ? defaultValue : current;
+      }
+
+      function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2000);
+      }
+
+      function fillCommand(text) {
+        try {
+          const chatInput = (parent.document || document).querySelector('#send_textarea');
+          if (chatInput) {
+            if (chatInput.value.trim() !== '') {
+              chatInput.value += '\n\n' + text;
+            } else {
+              chatInput.value = text;
+            }
+            chatInput.focus();
+            showToast('✅ 已填充到输入框');
+          } else {
+            throw new Error('未找到输入框');
+          }
+        } catch (e) {
+          navigator.clipboard
+            .writeText(text)
+            .then(() => {
+              showToast('📋 已复制到剪贴板');
+            })
+            .catch(() => {
+              alert('请手动复制：\n\n' + text);
+            });
+        }
+      }
+
+      function toggleCard() {
+        const card = document.getElementById('quick-reply-card');
+        const isCollapsed = card.classList.contains('collapsed');
+        if (isCollapsed) {
+          card.classList.remove('collapsed');
+        } else {
+          card.classList.add('collapsed');
+        }
+        document.getElementById('collapse-toggle').innerText = card.classList.contains('collapsed') ? '▼' : '▲';
+      }
+
+      function renderReplies(data) {
+        const currentReplies = safeGet(data, '快速回复.当前回复', []);
+        const fastForwardReplies = safeGet(data, '快速回复.快进回复', []);
+
+        // 合并所有回复选项
+        const allReplies = [];
+
+        // 添加当前回复（标记为类型1）
+        if (currentReplies && Array.isArray(currentReplies)) {
+          currentReplies.forEach((reply, index) => {
+            if (reply && typeof reply === 'object' && reply.标签 && reply.内容) {
+              allReplies.push({
+                type: 'current',
+                icon: '💬',
+                index: index + 1,
+                label: reply.标签,
+                content: reply.内容,
+              });
+            }
+          });
+        }
+
+        // 添加快进回复（标记为类型2）
+        if (fastForwardReplies && Array.isArray(fastForwardReplies)) {
+          fastForwardReplies.forEach((reply, index) => {
+            if (reply && typeof reply === 'object' && reply.标签 && reply.内容) {
+              allReplies.push({
+                type: 'forward',
+                icon: '⏭️',
+                index: index + 1,
+                label: reply.标签,
+                content: reply.内容,
+              });
+            }
+          });
+        }
+
+        // 渲染界面
+        let html = '';
+
+        if (allReplies.length > 0) {
+          html += '<div class="replies-grid">';
+
+          allReplies.forEach(reply => {
+            html += `
+              <div class="reply-card" onclick="fillCommand(\`${reply.content.replace(/`/g, '\\`')}\`)">
+                <div class="reply-label">
+                  <span class="badge">${reply.icon}</span>
+                  <span>${reply.label}</span>
+                </div>
+                <div class="reply-content">${reply.content}</div>
+              </div>
+            `;
+          });
+
+          html += '</div>';
+        } else {
+          html += `
+            <div class="empty">
+              <div class="empty-icon">📭</div>
+              <div>暂无快速回复选项</div>
+            </div>
+          `;
+        }
+
+        document.getElementById('content').innerHTML = html;
+      }
+
+      function showError(message) {
+        document.getElementById('content').innerHTML = `
+                <div class="error">
+                    <div class="error-icon">⚠️</div>
+                    <div>${message}</div>
+                </div>
+            `;
+      }
+
+      // ==================== 数据加载 ====================
+      async function loadData() {
+        try {
+          // 等待 MVU 初始化
+          if (typeof Mvu === 'undefined') {
+            if (window.parent && typeof window.parent.Mvu !== 'undefined') {
+              window.Mvu = window.parent.Mvu;
+            } else {
+              throw new Error('MVU 框架未加载');
+            }
+          }
+
+          // 获取最新消息的 MVU 数据
+          const mvuResult = Mvu.getMvuData({
+            type: 'message',
+            message_id: 'latest',
+          });
+
+          const data = mvuResult?.stat_data;
+
+          if (!data) {
+            throw new Error('未能加载数据');
+          }
+
+          console.log('✅ 数据加载成功', data);
+          renderReplies(data);
+        } catch (error) {
+          console.error('❌ 加载数据出错:', error);
+          showError('加载出错: ' + error.message);
+        }
+      }
+
+      // ==================== 初始化 ====================
+      function init() {
+        // 延迟加载，等待 MVU 框架完全初始化
+        setTimeout(loadData, 500);
+      }
+
+      // 使用 jQuery 方式初始化（符合项目规范）
+      if (typeof $ !== 'undefined') {
+        $(() => {
+          init();
+        });
+      } else {
+        // 如果 jQuery 未加载，使用原生方式
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else {
+          init();
+        }
+      }
+    </script>
+  </body>
+</html>

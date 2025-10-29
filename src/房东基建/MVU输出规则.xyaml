@@ -1,0 +1,375 @@
+format: |-
+    <UpdateVariable>
+        <Analysis>(IN ENGLISH, follow the 7-step COT process)
+            STEP 1: Time & Scene Analysis
+            [50 words: Time passed, current time, location, tenants present]
+            Time passed: [X hours/days]. Now [time], [time of day]. Location: [room]. X tenants present: [names].
+            
+            STEP 2: World Time Management
+            Current from <status_current_variables>:
+            - 年份: [current] → [new or N]
+            - 日期: [current] → [new or N]
+            - 星期: [current] → [new or N]
+            - 时间: [current] → [new]
+            Time passed? [YES/NO]
+            Variables to update:
+            - 世界.年份[0]: [Y/N]
+            - 世界.日期[0]: [Y/N]
+            - 世界.星期[0]: [Y/N]
+            - 世界.时间[0]: [Y/N]
+            
+            STEP 3: Tenant Management
+            Existing tenants: [List names]
+            - [Name1]: [KEEP/REMOVE/UPDATE] - Reason
+            - [Name2]: [KEEP/REMOVE/UPDATE] - Reason
+            New tenants to ADD: [List if any]
+            
+            STEP 4: Variable Review (For EACH tenant to UPDATE)
+            Tenant: [Name]
+              - 年龄[0]: [Y/N] - reason
+              - 外貌[0]: [Y/N]
+              - 职业[0]: [Y/N]
+              - 性格[0]: [Y/N]
+              - 恋情[0]: [Y/N]
+              - 内心[0]: [Y/N] - reason
+              - 状态[0]: [Y/N] - reason
+              - 穿搭[0]: [Y/N]
+              - 好感度[0]: [Y/N] - reason, delta value
+              - 性欲[0]: [Y/N]
+              - 入住日期[0]: N
+              - 入住天数[0]: [Y/N]
+              - 月租金[0]: [Y/N]
+              - 本月已缴租[0]: [Y/N]
+              - 当前位置[0]: [Y/N] - new location
+              - 关系: [Y/N] - which relationships changed
+            
+            STEP 5: Room & Event Management
+            - Room changes? [YES/NO] - details
+            - Significant event? [YES/NO] - event description
+            - Achievement? [YES/NO] - achievement name
+            
+            STEP 6: Command Selection
+            [List which command for each Y variable]
+            
+            STEP 7: Final Check
+            - [0] suffixes? [YES/NO]
+            - No extra quotes? [YES/NO]
+            - All Y have commands? [YES/NO]
+            - Chinese comments? [YES/NO]
+            - 内心 ≤30 chars? [YES/NO]
+            - Tenant names as keys? [YES/NO]
+            - Numeric values in range? [YES/NO]
+        </Analysis>
+        
+        // Commands go here based on analysis above
+    </UpdateVariable>
+
+  example_scenarios:
+    
+    # 场景1：日常互动（时间推进 + 租客状态更新）
+    daily_interaction: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: Time & Scene Analysis
+              2 hours passed. Now 17:30, evening. Location: living room. 1 tenant: 张小雪 reading.
+              
+              STEP 2: World Time Management
+              Current: 时间="15:30", others unchanged
+              Time passed? YES - 2 hours
+              - 世界.时间[0]: Y → 17:30
+              
+              STEP 3: Tenant Management
+              - 张小雪: UPDATE - had conversation
+              
+              STEP 4: Variable Review for 张小雪
+              - 内心[0]: Y - thoughts changed
+              - 状态[0]: Y - activity changed
+              - 好感度[0]: Y - pleasant talk, +5
+              
+              STEP 5: Room & Event
+              - Room: NO
+              - Event: NO
+              - Achievement: NO
+              
+              STEP 6: Commands
+              - 时间: _.set
+              - 张小雪.内心/状态: _.set
+              - 张小雪.好感度: _.add(+5)
+              
+              STEP 7: Final Check - All YES
+          </Analysis>
+          
+          // 时间推进
+          _.set('世界.时间[0]', '15:30', '17:30');//时间推进到傍晚
+          
+          // 更新张小雪状态
+          _.set('租客列表[0].张小雪.内心[0]', '正在看书，享受安静时光', '房东人真好，聊天很舒服');//内心想法
+          _.set('租客列表[0].张小雪.状态[0]', '独自在客厅看书', '在客厅看书，心情愉悦');//状态描述
+          _.add('租客列表[0].张小雪.好感度[0]', 5);//愉快交谈提升好感
+      </UpdateVariable>
+    
+    # 场景2：新租客入住（新增租客 + 房间更新 + 事件记录）
+    new_tenant_moving_in: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: Time & Scene
+              30 min passed. Now 14:00, afternoon. Location: entrance. New tenant 李华 arrived.
+              
+              STEP 2: Time
+              - 世界.时间[0]: Y → 14:00
+              
+              STEP 3: Tenants
+              Existing: 张小雪, 王美丽 - KEEP
+              New: 李华 - ADD (moving to 三楼房间一)
+              
+              STEP 4: N/A for new tenant
+              
+              STEP 5: Room & Event
+              - Room: YES - 三楼房间一.住户=李华, 类型=卧室
+              - Event: YES - "10月1日 - 租客李华入住"
+              - Achievement: NO (not first tenant, not full)
+              
+              STEP 6: Commands
+              - 时间: _.set
+              - 租客列表: _.insert('李华')
+              - 房间: _.set (住户, 类型)
+              - 事件: _.insert
+              
+              STEP 7: All YES
+          </Analysis>
+          
+          // 时间更新
+          _.set('世界.时间[0]', '13:30', '14:00');//时间推进
+          
+          // 添加新租客（完整15个字段）
+          _.insert('租客列表[0]', '李华', {
+              "年龄": [28, "租客年龄"],
+              "外貌": ["身材高挑，长发飘飘，气质优雅", "外貌描述"],
+              "职业": ["律师", "租客职业"],
+              "性格": ["干练、理性、有正义感", "性格"],
+              "恋情": ["单身", "恋情状态"],
+              "内心": ["希望这里能成为我的新家", "内心想法"],
+              "状态": ["刚搬入，正在整理行李", "当前状态"],
+              "穿搭": ["职业套装，白衬衫配黑色铅笔裙", "穿搭"],
+              "好感度": [50, "与<user>的好感度"],
+              "性欲": [20, "当前性欲值"],
+              "入住日期": ["10月1日", "入住日期"],
+              "入住天数": [0, "入住天数"],
+              "月租金": [2000, "月租金"],
+              "本月已缴租": [false, "是否已缴租"],
+              "当前位置": ["自己房间", "当前位置"],
+              "关系": {
+                  "<user>": ["房东", "与房东的关系"]
+              }
+          });//李华入住
+          
+          // 更新房间
+          _.set('公寓.房间列表[0].三楼房间一.住户[0]', '未知', '李华');//李华入住
+          _.set('公寓.房间列表[0].三楼房间一.类型[0]', '空房间', '卧室');//装修为卧室
+          
+          // 记录事件（租客入住是重大事件）
+          _.insert('事件历史[0]', '10月1日 - 租客李华入住三楼房间一');//事件记录
+      </UpdateVariable>
+    
+    # 场景3：租客退租（移除租客 + 房间更新 + 事件记录）
+    tenant_moving_out: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: Time & Scene
+              1 hour. Now 10:00, morning. Location: entrance. 王美丽 leaving.
+              
+              STEP 2: Time
+              - 世界.时间[0]: Y → 10:00
+              
+              STEP 3: Tenants
+              - 张小雪: KEEP
+              - 王美丽: REMOVE - moving out
+              - 李华: KEEP
+              
+              STEP 5: Room & Event
+              - Room: YES - 二楼房间二.住户=未知, 类型=卧室(保持)
+              - Event: YES - "10月15日 - 租客王美丽退租"
+              
+              STEP 6: Commands
+              - 时间: _.set
+              - 租客: _.remove
+              - 房间: _.set
+              - 事件: _.insert
+              
+              STEP 7: All YES
+          </Analysis>
+          
+          // 时间更新
+          _.set('世界.时间[0]', '09:00', '10:00');//时间推进
+          
+          // 移除退租租客
+          _.remove('租客列表[0]', '王美丽');//王美丽退租
+          
+          // 更新房间（保持卧室类型）
+          _.set('公寓.房间列表[0].二楼房间二.住户[0]', '王美丽', '未知');//房间空出
+          
+          // 记录事件
+          _.insert('事件历史[0]', '10月15日 - 租客王美丽退租离开');//事件记录
+      </UpdateVariable>
+    
+    # 场景4：日期变化（所有租客入住天数+1）
+    date_change: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: Next day
+              New day. Now 08:00, morning. Date: 9月25日, 星期二.
+              
+              STEP 2: Time
+              - 世界.日期[0]: Y → 9月25日
+              - 世界.星期[0]: Y → 星期二
+              - 世界.时间[0]: Y → 08:00
+              
+              STEP 3-4: Tenants
+              张小雪, 王美丽: UPDATE
+              - 入住天数[0]: Y - increment by 1
+              
+              STEP 5-7: All checks passed
+          </Analysis>
+          
+          // 日期和时间更新
+          _.set('世界.日期[0]', '9月24日', '9月25日');//日期推进
+          _.set('世界.星期[0]', '星期一', '星期二');//星期更新
+          _.set('世界.时间[0]', '00:00', '08:00');//新的一天
+          
+          // 所有租客入住天数+1
+          _.add('租客列表[0].张小雪.入住天数[0]', 1);//天数+1
+          _.add('租客列表[0].王美丽.入住天数[0]', 1);//天数+1
+      </UpdateVariable>
+    
+    # 场景5：房间建造流程（新建→装修→入住）
+    room_construction: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 30 min. Now 14:30. User built new room.
+              STEP 2: Time - Y
+              STEP 5: Room - YES, new "二楼房间五" as "空房间"
+                     Event - NO (construction not major event)
+                     Achievement - NO
+              STEP 6-7: All checks passed
+          </Analysis>
+          
+          _.set('世界.时间[0]', '14:00', '14:30');//时间推进
+          
+          // 新建空房间
+          _.insert('公寓.房间列表[0]', '二楼房间五', {
+              "类型": ["空房间", "房间类型"],
+              "名称": ["二楼房间五", "房间名称"],
+              "住户": ["未知", "当前住户"],
+              "描述": ["新建的空房间，等待装修", "描述"],
+              "布局": { "楼层": "二楼", "位置": "9-10" }
+          });//新建空房间
+      </UpdateVariable>
+    
+    room_decoration_bedroom: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 15 min. Now 14:45. Decorating as bedroom.
+              STEP 2: Time - Y
+              STEP 5: Room - YES, type: 空房间→卧室, desc updated
+                     Event - NO (decoration not major)
+              STEP 7: All YES
+          </Analysis>
+          
+          _.set('世界.时间[0]', '14:30', '14:45');//时间推进
+          _.set('公寓.房间列表[0].二楼房间五.类型[0]', '空房间', '卧室');//装修为卧室
+          _.set('公寓.房间列表[0].二楼房间五.描述[0]', '新建的空房间，等待装修', '温馨舒适的卧室，可供租客入住');//更新描述
+      </UpdateVariable>
+    
+    room_decoration_functional: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 20 min. Now 15:05. Decorating as functional room (书房).
+              STEP 2: Time - Y
+              STEP 5: Room - YES, type: 空房间→功能性房间, name: 二楼房间五→书房, desc updated
+                     Event - NO
+              STEP 7: All YES
+          </Analysis>
+          
+          _.set('世界.时间[0]', '14:45', '15:05');//时间推进
+          _.set('公寓.房间列表[0].二楼房间五.类型[0]', '空房间', '功能性房间');//装修为功能性房间
+          _.set('公寓.房间列表[0].二楼房间五.名称[0]', '二楼房间五', '书房');//名称改为用途名
+          _.set('公寓.房间列表[0].二楼房间五.描述[0]', '新建的空房间，等待装修', '书房，配有实木书架、阅读灯和舒适的座椅');//更新描述
+      </UpdateVariable>
+    
+    room_demolition_bedroom: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 10 min. Now 15:15. Removing bedroom decoration.
+              STEP 2: Time - Y
+              STEP 5: Room - YES, type: 卧室→空房间, desc reset
+                     Event - NO
+              STEP 7: All YES
+          </Analysis>
+          
+          _.set('世界.时间[0]', '15:05', '15:15');//时间推进
+          _.set('公寓.房间列表[0].二楼房间五.类型[0]', '卧室', '空房间');//拆除装修
+          _.set('公寓.房间列表[0].二楼房间五.描述[0]', '温馨舒适的卧室，可供租客入住', '新建的空房间，等待装修');//重置描述
+      </UpdateVariable>
+    
+    room_demolition_functional: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 10 min. Now 15:25. Removing functional room decoration.
+              STEP 2: Time - Y
+              STEP 5: Room - YES, type: 功能性房间→空房间, name: 书房→二楼房间五, desc reset
+                     Event - NO
+              STEP 7: All YES
+          </Analysis>
+          
+          _.set('世界.时间[0]', '15:15', '15:25');//时间推进
+          _.set('公寓.房间列表[0].二楼房间五.类型[0]', '功能性房间', '空房间');//拆除装修
+          _.set('公寓.房间列表[0].二楼房间五.名称[0]', '书房', '二楼房间五');//名称改回原编号
+          _.set('公寓.房间列表[0].二楼房间五.描述[0]', '书房，配有实木书架、阅读灯和舒适的座椅', '新建的空房间，等待装修');//重置描述
+      </UpdateVariable>
+    
+    # 场景6：关系更新（租客之间建立关系）
+    relationship_update: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 2 hours. Now 20:30. 李华 and 张小雪 became friends.
+              STEP 2: Time - Y
+              STEP 3-4: Both UPDATE - relationship changed
+              STEP 6: 时间: _.set
+                     李华.关系: _.insert
+                     张小雪.关系: _.insert
+              STEP 7: Relationship values are MVU arrays - YES
+          </Analysis>
+          
+          _.set('世界.时间[0]', '18:30', '20:30');//时间推进
+          
+          // 关系必须是MVU数组格式
+          _.insert('租客列表[0].李华.关系', '张小雪', ["好友", "与张小雪的关系"]);//成为好友
+          _.insert('租客列表[0].张小雪.关系', '李华', ["好友", "与李华的关系"]);//成为好友
+      </UpdateVariable>
+    
+    # 场景7：成就解锁（好感度达到100）
+    achievement_unlock: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 张小雪 favorability reached 100.
+              STEP 4: 张小雪.好感度: 95→100
+              STEP 5: Achievement - YES, first max favorability
+              STEP 6-7: All YES
+          </Analysis>
+          
+          _.add('租客列表[0].张小雪.好感度[0]', 5);//好感度达到100
+          
+          // 重大成就解锁
+          _.insert('成就列表[0]', '完美房东 - 某位租客对你达到了满好感度');//成就解锁
+      </UpdateVariable>
+
+  critical_reminders:
+    - EVERY response MUST end with <UpdateVariable> block - NO EXCEPTIONS!
+    - Follow the 7-step COT process in <Analysis>
+    - Always use [0] suffix for MVU values
+    - NEVER use extra quotes inside string values
+    - 关系字段的值必须是MVU数组: ["关系描述", "说明文本"]
+    - 事件历史和成就：仅记录真正重大事件/成就
+    - 房间建造：三态系统（空白→空房间→已装修）
+    - Time MUST be updated when scene progresses
+    - All numeric changes use _.add, not _.set

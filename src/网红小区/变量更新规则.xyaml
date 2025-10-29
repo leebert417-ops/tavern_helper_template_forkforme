@@ -1,0 +1,153 @@
+---
+变量更新规则:
+  世界:
+    年份:
+      type: string
+      range: 格式为 YYYY年
+      check:
+        - 仅在剧情跨年时更新
+    日期:
+      type: string
+      range: 格式为 m月d日
+      check:
+        - 当进入新的一天时更新
+        - 日期变化应同步更新 星期，所有租客 入住天数[0] +1
+    星期:
+      type: string
+      range: 星期一~星期日
+      check:
+        - 应与日期联动更新
+    时间:
+      type: string
+      range: 格式为 HH:MM，24小时制
+      check:
+        - 场景推进或事件发生后更新到合理时间点
+    地点:
+      type: string
+      range: 固定为 东海市·荟萃城（如需迁移需有充分剧情理由）
+      check:
+        - 非必要不变更
+
+  公寓:
+    楼层配置:
+      type: object
+      range: 键为楼层名，值包含 显示名称/总容量/顺序
+      check:
+        - 新建楼层仅通过 _.insert 追加，遵循顺序值（大在上）
+        - 删除楼层仅在该层无任何房间时允许
+    房间列表:
+      type: object
+      range: 键为房间名
+      check:
+        - 新建空房间：使用 _.insert 创建（类型=空房间，描述=新建的空房间，等待装修）
+        - 装修为空房→卧室：_.set('类型[0]', '空房间', '卧室') 并更新描述为可居住
+        - 装修为空房→功能性房间：_.set('类型[0]', '空房间', '功能性房间')，可改 名称 为用途名
+        - 卧室入住：_.set('住户[0]', '未知', '租客名')（仅当 类型=卧室 且 住户=未知）
+        - 卧室退租：_.set('住户[0]', '租客名', '未知') 并 _.remove('租客列表[0]', '租客名')
+        - 拆除装修：卧室/功能房 → 空房间，描述复位为“新建的空房间，等待装修”
+        - 删除房间：仅当 类型=空房间 且 无住户时可 _.remove
+        - 室外区域与固定设施、您的房间不可删除
+      子字段:
+        类型:
+          type: string
+          range: 空房间|卧室|功能性房间|固定设施|您的房间|室外区域
+        名称:
+          type: string
+          range: 房间对外显示名称
+        住户:
+          type: string
+          range: 未知 或 现有租客名
+        布局.楼层:
+          type: string
+          range: 必须存在于 楼层配置 中
+        布局.位置:
+          type: string
+          range: '1-10 连续范围' 或 'outdoor-left'/'outdoor-right'
+
+  租客列表（通用模板，适用于每位租客）:
+    年龄:
+      type: number
+      range: 正整数，通常 18~40
+      check:
+        - 基本不变
+    外貌:
+      type: string
+      range: 面容/体态曲线/胸部/臀部/显著特征 的组合描述
+      check:
+        - 仅在风格大改时更新
+    职业:
+      type: string
+      range: 需符合现代都市/网红艺人语境
+    性格:
+      type: string
+      range: 3~6 个关键词或组合句
+      check:
+        - 基本不变
+    恋情:
+      type: string
+      range: 单身|恋爱中|已婚 等
+    内心:
+      type: string
+      range: 角色即时想法，≤30个中文字符
+      check:
+        - 重要互动后更新
+    状态:
+      type: string
+      range: 正在做的事/场景表现
+    穿搭:
+      type: string
+      range: 当日/当下穿搭描述
+    好感度:
+      type: number
+      range: capped in 0~100
+      check:
+        - 日常互动 ±3~6；重要事件 ±8~12；采用 _.add
+    性欲:
+      type: number
+      range: capped in 0~100（如未启用可忽略）
+    入住日期:
+      type: string
+      range: m月d日
+      check:
+        - 入住时一次性设置
+    入住天数:
+      type: number
+      range: 非负整数
+      check:
+        - 日期变更时 +1
+    月租金:
+      type: number
+      range: 正数（货币，单位人民币）
+    本月已缴租:
+      type: boolean
+      range: true/false
+      check:
+        - 月份切换时重置为 false
+    当前位置:
+      type: string
+      range: 有效房间名 或 外出
+      check:
+        - 移动时更新
+    创作内容:
+      type: string
+      range: 直播|短视频|写真|舞蹈|健身|美妆|音乐|二次元 等
+    关系:
+      type: object
+      range: { "角色名": ["关系描述", "说明文本"] }
+      check:
+        - 新增/更新关系使用 _.insert 或 _.set
+
+  事件历史:
+    type: array
+    range: 仅记录重大事件的字符串
+    check:
+      - ✅ 首位入住/退租/满员/确立恋人关系/突破性剧情
+      - ❌ 日常互动/缴租/普通装修
+
+  成就列表:
+    type: array
+    range: 仅记录重要里程碑的字符串
+    check:
+      - ✅ 首位入住/满员/任意租客满好感/确立恋人关系
+      - ❌ 日常活动/小修小改
+

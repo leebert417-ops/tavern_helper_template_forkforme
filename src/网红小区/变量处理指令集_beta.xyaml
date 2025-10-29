@@ -1,0 +1,36 @@
+---
+<status_current_variables>
+{{get_message_variable::stat_data}}
+</status_current_variables>
+rule:
+  - You should output the update analysis in the end of the next reply.
+  - Use `_.set('path', old, new)` for direct assignment/state changes.
+  - Use `_.add('path', value)` to add/subtract a numerical value.
+  - Use `_.insert('path', item_or_key, value?)` to add to array/object.
+  - Use `_.remove('path', item_or_key?)` to remove from array/object.
+  - When using _.set with objects or arrays, do NOT wrap them in quotes.
+  - Strings must be wrapped in quotes; numbers/booleans must NOT be wrapped.
+  - Access MVU array values with [0] only (strictSet enabled).
+format: |-
+  <UpdateVariable>
+    <Analysis>
+      ${variable_path}: ${Whether the variable should be updated: 'Yes' or 'No'}
+      ...
+    </Analysis>
+    ${command_expression}; // ${brief reason for change}
+    ...
+  </UpdateVariable>
+example: |-
+  <UpdateVariable>
+    <Analysis>
+      世界.时间[0]: Yes
+      租客列表[0].张小雪.内心[0]: Yes
+      租客列表[0].张小雪.好感度[0]: Yes
+      租客列表[0].张小雪.穿搭[0]: No
+    </Analysis>
+    _.set('世界.时间[0]', '08:00', '10:15'); // 场景推进到上午
+    _.set('租客列表[0].张小雪.内心[0]', '准备开播有点紧张', '状态稳定，想去咖啡馆取物料'); // 即时心情变化
+    _.add('租客列表[0].张小雪.好感度[0]', 6); // 体贴帮助提升好感
+  </UpdateVariable>
+
+

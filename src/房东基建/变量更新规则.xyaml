@@ -1,0 +1,239 @@
+current_variables: |-
+  <status_current_variables>
+  {{get_message_variable::stat_data}}
+  </status_current_variables>
+
+rule:
+  description:
+    - CRITICAL: EVERY response MUST end with <UpdateVariable> block
+    - Output update analysis at the end of EVERY response, following <status_current_variables> above
+    - Variable updates are omitted in context but you must still add them EVERY TIME
+    - CRITICAL: For MVU format [value, description], ALWAYS use [0] suffix to access the value part
+    - CRITICAL: NEVER include quotes inside string values. Write `_.set('年份[0]', '2024年')` NOT `_.set('年份[0]', '"2024年"')`
+    - CRITICAL: This is a LANDLORD APARTMENT SIMULATION - Focus on time, tenants, rooms, and events
+    - 4 commands available: `_.set` (2-3 args), `_.insert` (2-3 args), `_.remove` (1-2 args), `_.add` (2 args, numbers only)
+    - strictSet enabled: [0] suffix is mandatory for all value access
+    - All variable values follow MVU format: [actual_value, 'description']
+
+  command_usage:
+    - `_.set('path[0]', old?, new);//reason` - Replace value
+    - `_.add('path[0]', delta);//reason` - Add/subtract numbers only
+    - `_.insert('path[0]', value);//reason` or `_.insert('path', key, value);//reason` - Add to array/object
+    - `_.remove('path[0]', value);//reason` or `_.remove('path', key);//reason` - Remove from array/object
+
+  analysis:
+    You MUST follow this Chain-of-Thought (COT) analysis process step by step:
+    
+    STEP 1: Time & Scene Analysis (50 words max, IN ENGLISH)
+    - Identify time progression: Has time passed? [YES/NO]
+    - If YES: How much time passed? (minutes/hours/days)
+    - Note current time of day: [morning/noon/afternoon/evening/night]
+    - Identify location: [which room/area of apartment]
+    - Example: "1 hour passed. Now 15:30, afternoon. Scene: living room. 2 tenants present."
+    
+    STEP 2: World Time Management
+    - Read <status_current_variables> for current: 年份, 日期, 星期, 时间
+    - Time passed? [YES/NO]
+      * If YES: Calculate new time
+      * If date changed: Update 日期, 星期
+      * If year changed: Update 年份
+    - Mark which variables need update:
+      * 世界.年份[0]: [Y/N]
+      * 世界.日期[0]: [Y/N]
+      * 世界.星期[0]: [Y/N]
+      * 世界.时间[0]: [Y/N]
+    
+    STEP 3: Tenant Management - Add/Remove/Update
+    - Read <status_current_variables> to see which tenants exist in 租客列表[0]
+    - For EACH tenant in 租客列表[0]: Should this tenant still exist? [YES/NO]
+      * If NO (tenant moved out): Mark for REMOVAL - use `_.remove('租客列表[0]', '租客名')`
+    - New tenant moved in? [YES/NO]
+      * If YES: Mark for ADDITION - use `_.insert('租客列表[0]', '租客名', {...})`
+    - For existing tenants, mark which need updates
+    
+    STEP 4: Systematic Variable Review (FOR EACH TENANT)
+    For EACH tenant marked for UPDATE in STEP 3, go through their fields and mark Y/N:
+    - Skip this step for new tenants (they get full data in _.insert)
+    - Skip this step for removed tenants (they get _.remove)
+    
+    Tenant Data Fields (15 fields):
+      - 年龄[0]: [Y/N] - Age in years, rarely changes
+      - 外貌[0]: [Y/N] - Appearance description, rarely changes
+      - 职业[0]: [Y/N] - Occupation, rarely changes
+      - 性格[0]: [Y/N] - Personality, almost never changes
+      - 恋情[0]: [Y/N] - Relationship status, mark Y if changed
+      - 内心[0]: [Y/N] - Inner thoughts, update frequently (max 30 Chinese characters)
+      - 状态[0]: [Y/N] - Current state/activity, update frequently
+      - 穿搭[0]: [Y/N] - Current outfit, update when changed
+      - 好感度[0]: [Y/N] - Favorability 0-100, mark Y if increased/decreased
+      - 性欲[0]: [Y/N] - Lust 0-100, mark Y if increased/decreased
+      - 入住日期[0]: [Y/N] - Move-in date, never changes after set
+      - 入住天数[0]: [Y/N] - Days since move-in, mark Y if date changed
+      - 月租金[0]: [Y/N] - Monthly rent, rarely changes
+      - 本月已缴租[0]: [Y/N] - Paid rent this month (true/false), mark Y if paid or month changed
+      - 当前位置[0]: [Y/N] - Current location in apartment, update when moved
+      - 关系: [OBJECT] - Relationships with others, check if any changed
+        * Format: { "角色名": ["关系描述", "说明文本"] }
+        * Example: { "<user>": ["房东", "与房东的关系"], "张小雪": ["好友", "与张小雪的关系"] }
+        * Update: _.set('租客列表[0].李华.关系.<user>[0]', '房东', '朋友')
+        * Add new: _.insert('租客列表[0].李华.关系', '张小雪', ["室友", "与张小雪的关系"])
+    
+    STEP 5: Room & Event & Achievement Management
+    
+    5A: Room Management (房间管理)
+    - Check 公寓.房间列表[0]: Any room changes? [YES/NO]
+    
+    Room Construction Flow (三态系统):
+    1. 新建房间 (完全空白 → 空房间)
+       * Use _.insert('公寓.房间列表[0]', '房间名', {类型:["空房间",...], 名称:["房间名",...], 描述:["新建的空房间，等待装修",...], ...})
+    
+    2. 装修房间 (空房间 → 卧室/功能性房间)
+       * 装修为卧室: 
+         - _.set('公寓.房间列表[0].房间名.类型[0]', '空房间', '卧室')
+         - _.set('公寓.房间列表[0].房间名.描述[0]', '新建的空房间，等待装修', '温馨舒适的卧室，可供租客入住')
+         - 名称保持不变
+       
+       * 装修为功能房(如"书房"):
+         - _.set('公寓.房间列表[0].房间名.类型[0]', '空房间', '功能性房间')
+         - _.set('公寓.房间列表[0].房间名.名称[0]', '房间名', '书房')  // 改为用途名
+         - _.set('公寓.房间列表[0].房间名.描述[0]', '新建的空房间，等待装修', '书房，配有实木书架、阅读灯...')
+    
+    3. 租客入住 (卧室无住户 → 卧室有住户)
+       * _.set('公寓.房间列表[0].房间名.住户[0]', '未知', '租客名')
+       * 注意：只能入住"卧室"类型
+    
+    4. 租客退租 (卧室有住户 → 卧室无住户)
+       * _.set('公寓.房间列表[0].房间名.住户[0]', '租客名', '未知')
+       * _.remove('租客列表[0]', '租客名')
+       * 房间类型和名称保持"卧室"和原名称
+    
+    5. 拆除装修 (卧室/功能房 → 空房间)
+       * 前提：住户必须="未知"
+       * 卧室拆除:
+         - _.set('公寓.房间列表[0].房间名.类型[0]', '卧室', '空房间')
+         - _.set('公寓.房间列表[0].房间名.描述[0]', '原描述', '新建的空房间，等待装修')
+       * 功能房拆除(如"书房"→"四楼房间一"):
+         - _.set('公寓.房间列表[0].房间名.类型[0]', '功能性房间', '空房间')
+         - _.set('公寓.房间列表[0].房间名.名称[0]', '书房', '房间名')  // 改回原编号
+         - _.set('公寓.房间列表[0].房间名.描述[0]', '原描述', '新建的空房间，等待装修')
+    
+    6. 删除房间 (空房间 → 完全空白)
+       * _.remove('公寓.房间列表[0]', '房间名')
+    
+    5B: Event History (事件历史 - 仅记录真正重大事件)
+    - Check 事件历史: Did TRULY significant event occur? [YES/NO]
+    
+      CRITICAL: Use sparingly! Only record major life-changing events!
+      
+      ✅ Allowed (major events):
+        - 首位租客入住
+        - 租客退租离开
+        - 确立恋人关系、H事件
+        - 租满6人(满员)
+        - 特殊剧情高潮/转折点
+      
+      ❌ Forbidden (daily trivia):
+        - 建造/装修/拆除房间 (construction, not events!)
+        - 日常对话和互动
+        - 普通好感度变化
+        - 缴纳租金等日常事务
+      
+      * If YES (truly major): Use _.insert('事件历史[0]', '日期 - 事件描述')
+      * Format: "9月24日 - 首位租客张小雪入住"
+    
+    5C: Achievement System (成就系统 - 仅重大里程碑)
+    - Check if any MAJOR achievement condition met? [YES/NO]
+    
+    CRITICAL: Achievements should be celebratory milestones, not daily tasks!
+    
+    ✅ Allowed (major milestones):
+    - 首位租客入住 → "初次相遇 - 迎来了公寓的第一位租客"
+    - 租满6人 → "满员运营 - 公寓达到满员状态"
+    - 任意租客好感度100 → "完美房东 - 某位租客对你达到了满好感"
+    - 确立恋人关系 → "心动时刻 - 与租客确立了恋人关系"
+    - H事件 → "禁忌之恋 - 与租客突破了最后的界限"
+    - 所有租客好感度>80 → "人气房东 - 所有租客都很喜欢你"
+    
+    ❌ Forbidden (trivial achievements):
+    - 建造功能性房间
+    - 举办集体活动
+    - 租满3人 (threshold too low)
+    
+    * If achievement unlocked: Use _.insert('成就列表[0]', '成就名 - 成就描述')
+    
+    STEP 6: Command Selection
+    For each variable marked Y in STEPS 2-5, determine which command to use:
+    - Use _.set for: Most string values, boolean values, status updates, room type changes
+    - Use _.add for: 好感度, 性欲, 入住天数 (numeric increments/decrements)
+    - Use _.insert for: New tenants, new events, new rooms, new achievements
+    - Use _.remove for: Tenants moving out, deleted rooms
+    
+    STEP 7: Final Validation Checklist
+    Before outputting commands, verify:
+    - All [0] suffixes present? [YES/NO]
+    - All string values WITHOUT extra quotes? [YES/NO]
+    - All Y variables have corresponding commands? [YES/NO]
+    - All commands have Chinese comments? [YES/NO]
+    - 内心 within 30 characters? [YES/NO]
+    - Tenant names used as keys? [YES/NO]
+    - Numeric values 0-100? [YES/NO]
+
+  value_constraints:
+    - 好感度: 0-100, use _.add for small changes (-5 to +8 typical)
+    - 性欲: 0-100, increases gradually, can spike with stimulation
+    - 本月已缴租: true or false (boolean), reset to false on month change
+    - 入住天数: Integer, use _.add(+1) when date changes
+    - 当前位置: Must be valid room name or "外出"
+    - 关系: Object with character names as keys, values are MVU arrays ["关系描述", "说明文本"]
+
+  special_rules:
+    - Time Management:
+      * Update time whenever scene progresses
+      * When date changes, also update 星期
+      * When month changes, reset all 本月已缴租 to false
+      * 入住天数 increments by 1 when date changes
+    
+    - Tenant Management:
+      * New tenant: Use _.insert with all 15 required fields
+      * Moving out: Use _.remove on 租客列表[0] and update room 住户
+      * Favorability changes: ±3-5 for normal interactions, ±8-10 for significant events
+      * Lust changes: +5-15 for arousing situations, -10-20 after release
+    
+    - Room Management:
+      * 新建房间: _.insert('公寓.房间列表[0]', '房间名', {类型:["空房间",...], 名称:["房间名",...], 描述:["新建的空房间，等待装修",...], ...})
+      * 装修为卧室: 
+        - _.set('房间名.类型[0]', '空房间', '卧室')
+        - _.set('房间名.描述[0]', '新建的空房间，等待装修', '温馨舒适的卧室，可供租客入住')
+      * 装修为功能房(如"书房"):
+        - _.set('房间名.类型[0]', '空房间', '功能性房间')
+        - _.set('房间名.名称[0]', '房间名', '书房')
+        - _.set('房间名.描述[0]', '新建的空房间，等待装修', '书房，配有实木书架、阅读灯...')
+      * 租客入住: _.set('房间名.住户[0]', '未知', '租客名')
+      * 租客退租: _.set('房间名.住户[0]', '租客名', '未知')
+      * 拆除装修(卧室): 
+        - _.set('房间名.类型[0]', '卧室', '空房间')
+        - _.set('房间名.描述[0]', '原描述', '新建的空房间，等待装修')
+      * 拆除装修(功能房):
+        - _.set('房间名.类型[0]', '功能性房间', '空房间')
+        - _.set('房间名.名称[0]', '书房', '房间名')
+        - _.set('房间名.描述[0]', '原描述', '新建的空房间，等待装修')
+      * 删除房间: _.remove('公寓.房间列表[0]', '房间名')
+    
+    - Event Recording (Use sparingly!):
+      * ONLY truly major events: _.insert('事件历史[0]', '日期 - 事件描述')
+      * ✅ Record: 首次入住、退租、恋人、H事件、满员
+      * ❌ Don't record: 建造/装修房间、日常互动、缴租
+    
+    - Achievement System (Use sparingly!):
+      * When MAJOR condition met: _.insert('成就列表[0]', '成就名 - 成就描述')
+      * ✅ Allowed: 首位租客、满员、满好感、恋人、H事件
+      * ❌ Forbidden: 建造功能房、举办活动、租满3人
+
+  prohibited_actions:
+    - NEVER use quotes inside string values
+    - NEVER forget [0] suffix when accessing MVU values
+    - NEVER let 好感度 or 性欲 go below 0 or above 100
+    - NEVER update immutable fields like 性格 frequently
+    - NEVER use generic keys like 租客1, 租客2
+    - NEVER update 入住日期 after initial setting
+    - NEVER skip <UpdateVariable> block - EVERY response MUST have it!

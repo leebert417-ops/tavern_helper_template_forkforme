@@ -1,0 +1,109 @@
+// 网红小区主题变量 - 继承自原始公寓管理 UI
+:root {
+  // 主色调
+  --apt-primary: #ff6b9d;
+  --apt-secondary: #c44569;
+
+  // 背景色
+  --apt-bg: #1a1a2e;
+  --apt-card: #16213e;
+  --apt-border: rgba(255, 107, 157, 0.2);
+
+  // 文字色
+  --apt-text: #e8eaf6;
+  --apt-dim: #e5e7eb;
+
+  // 房间类型颜色
+  --room-bedroom: linear-gradient(135deg, #592e39 0%, #7a4053 100%);
+  --room-bedroom-vacant: linear-gradient(135deg, rgba(255, 182, 193, 0.6) 0%, rgba(255, 192, 203, 0.7) 100%);
+  --room-empty: linear-gradient(135deg, #3d3f47 0%, #4a4f5a 100%);
+  --room-player: linear-gradient(135deg, #2e5266 0%, #3a6d8c 100%);
+  --room-lounge: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  --room-gym: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  --room-laundry: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+  --room-custom: linear-gradient(135deg, rgba(16, 185, 129, 0.6) 0%, rgba(52, 211, 153, 0.7) 100%);
+}
+
+// 全局重置样式（仅针对游戏容器）
+#game-container {
+  * {
+    box-sizing: border-box;
+  }
+}
+
+// 滚动条样式
+.custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--apt-primary);
+    border-radius: 4px;
+  }
+}
+
+// 通用卡片样式
+.apt-card {
+  background: var(--apt-card);
+  border: 1px solid var(--apt-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.apt-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 107, 157, 0.15);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--apt-text);
+}
+
+.apt-card-body {
+  padding: 16px;
+}
+
+// 按钮样式
+.apt-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--apt-primary) 0%, var(--apt-secondary) 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(255, 107, 157, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 157, 0.5);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.apt-btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--apt-border);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}

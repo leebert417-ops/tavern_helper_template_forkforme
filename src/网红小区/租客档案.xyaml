@@ -85,7 +85,6 @@
 - 使用 <UpdateVariable> 执行MVU操作：
   * _.insert 添加到 租客列表
   * 分配卧室（仅当 类型=卧室 且 住户=未知）
-  * 重大事件可写入 事件历史
 
 </character_info>
 

@@ -1,36 +1,209 @@
 ---
+current_variables: |-
 <status_current_variables>
 {{get_message_variable::stat_data}}
 </status_current_variables>
+
 rule:
-  - You should output the update analysis in the end of the next reply.
-  - Use `_.set('path', old, new)` for direct assignment/state changes.
-  - Use `_.add('path', value)` to add/subtract a numerical value.
-  - Use `_.insert('path', item_or_key, value?)` to add to array/object.
-  - Use `_.remove('path', item_or_key?)` to remove from array/object.
-  - When using _.set with objects or arrays, do NOT wrap them in quotes.
-  - Strings must be wrapped in quotes; numbers/booleans must NOT be wrapped.
-  - Access MVU array values with [0] only (strictSet enabled).
+  description:
+    - CRITICAL: EVERY response MUST end with <UpdateVariable> block
+    - For MVU format [value, description], ALWAYS use [0] suffix
+    - NEVER include quotes inside string values
+    - This is an INFLUENCER APARTMENT - All tenants must be content creators
+    - 4 commands: _.set | _.add (numbers only) | _.insert | _.remove
+    - Room numbers: 101/202/302 (NOT "三楼房间一")
+    - 创作内容 field is MANDATORY for all tenants
+
+  command_usage:
+    - `_.set('path[0]', old?, new);//reason` - Replace value
+    - `_.add('path[0]', delta);//reason` - Numbers only
+    - `_.insert('path[0]', value);//reason` - Add to array/object
+    - `_.remove('path[0]', value);//reason` - Remove from array/object
+
+  analysis:
+    Follow 7-step COT process (IN ENGLISH):
+    
+    STEP 1: Time & Scene (50 words max)
+    - Time passed? How much? Current time? Location? Tenants present?
+    
+    STEP 2: World Time Variables
+    - 世界.年份/日期/星期/时间/地点: Mark [Y/N] for each
+    
+    STEP 3: Tenant Management
+    - List existing tenants: [KEEP/REMOVE/UPDATE]
+    - New tenants to ADD?
+    
+    STEP 4: Tenant Fields (14 fields, mark Y/N for each updated tenant)
+    - 年龄/外貌/职业/性格/恋情 (rarely change)
+    - 内心/状态/穿搭 (frequently update)
+    - 好感度/性欲/入住天数 (numeric, use _.add)
+    - 入住日期 (never changes)
+    - 当前位置
+    - 创作内容 (网红小区 mandatory)
+    - 关系 (MVU array format: ["关系描述", "说明文本"])
+    
+    STEP 5: Room Changes
+    - Room changes? (购置新楼层/装修空房间/拆除房间, 用房间号101/202/302)
+    - 购置新楼层：同时建4个空房间（401/402/403/404）
+    - 装修空房间：类型改为"套间"或功能房间名，更新描述和功能区
+    - 拆除房间：类型改为"空房间"，清空住户和功能区，描述改为"未装修的空房间"
+    
+    STEP 6: Command Selection
+    - _.set: strings, booleans, status
+    - _.add: 好感度, 性欲, 入住天数
+    - _.insert: new tenants/events/rooms/achievements
+    - _.remove: tenants moving out
+    
+    STEP 7: Final Check
+    - [0] suffixes? No extra quotes? Chinese comments? 内心≤30 chars?
+    - Room numbers correct (101/202/302)? 创作内容 present for new tenants?
+
+  key_rules:
+    - Time: Scene progresses → update 时间; Date changes → update 日期+星期+入住天数
+    - Tenants: All MUST be content creators with 创作内容 field (14 fields total)
+    - Rooms: Use room numbers (101/202/302), NOT old naming
+    - 购置新楼层：同时建4个空房间（401/402/403/404）
+    - 装修空房间：_.set('类型[0]', '空房间', '套间') 或功能房间名，更新描述和功能区
+    - 拆除房间：_.set('类型[0]', old, '空房间')，清空住户，描述改为"未装修的空房间"
+    - 拆除限制：203（您的房间）和101/102/103/104/204/304（默认公共设施）永不可拆除
+    - 好感度/性欲: 0-100, use _.add (±3-6 normal, ±8-12 significant)
+    - 关系: MVU array format ["关系描述", "说明文本"]
+
 format: |-
-  <UpdateVariable>
-    <Analysis>
-      ${variable_path}: ${Whether the variable should be updated: 'Yes' or 'No'}
-      ...
-    </Analysis>
-    ${command_expression}; // ${brief reason for change}
-    ...
-  </UpdateVariable>
-example: |-
-  <UpdateVariable>
-    <Analysis>
-      世界.时间[0]: Yes
-      租客列表[0].张小雪.内心[0]: Yes
-      租客列表[0].张小雪.好感度[0]: Yes
-      租客列表[0].张小雪.穿搭[0]: No
-    </Analysis>
-    _.set('世界.时间[0]', '08:00', '10:15'); // 场景推进到上午
-    _.set('租客列表[0].张小雪.内心[0]', '准备开播有点紧张', '状态稳定，想去咖啡馆取物料'); // 即时心情变化
-    _.add('租客列表[0].张小雪.好感度[0]', 6); // 体贴帮助提升好感
-  </UpdateVariable>
+    <UpdateVariable>
+        <Analysis>(IN ENGLISH, 7-step COT)
+            STEP 1: [Time passed? Current time/location/tenants]
+            STEP 2: [年份/日期/星期/时间/地点 - mark Y/N]
+            STEP 3: [Existing tenants status, New tenants?]
+            STEP 4: [For each updated tenant, mark 16 fields Y/N]
+            STEP 5: [Room changes?]
+            STEP 6: [Commands for each Y variable]
+            STEP 7: [Final checks - all YES?]
+        </Analysis>
+        
+        // Commands with Chinese comments
+    </UpdateVariable>
 
-
+examples:
+    
+    # 日常互动
+    daily: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 2h passed, 17:30 evening, 202 room, 李雨晴 present
+              STEP 2: 时间 Y
+              STEP 3: 李雨晴 UPDATE
+              STEP 4: 内心/状态/好感度 Y
+              STEP 5: No room changes
+              STEP 6: _.set time/内心/状态, _.add 好感度
+              STEP 7: All YES
+          </Analysis>
+          _.set('世界.时间[0]', '15:30', '17:30');//时间推进
+          _.set('租客列表[0].李雨晴.内心[0]', '准备开播有点紧张', '房东真体贴，聊天很舒服');//内心想法
+          _.set('租客列表[0].李雨晴.状态[0]', '在房间调试直播设备', '设备调好了，心情愉悦');//状态
+          _.add('租客列表[0].李雨晴.好感度[0]', 6);//愉快交谈提升好感
+      </UpdateVariable>
+    
+    # 新租客入住（网红小区16字段含创作内容）
+    new_tenant: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 30min, 14:00, entrance, 张小雪 arrived
+              STEP 2: 时间 Y
+              STEP 3: ADD 张小雪 to 201
+              STEP 4: N/A (new tenant gets full insert)
+              STEP 5: Room Y (201.住户)
+              STEP 6: _.set time, _.insert tenant, _.set room
+              STEP 7: All YES, 创作内容 present
+          </Analysis>
+          _.set('世界.时间[0]', '13:30', '14:00');//时间推进
+          _.insert('租客列表[0]', '张小雪', {
+              "年龄": [22, "租客年龄"], "外貌": ["清秀可爱，身材纤细，胸部中等，臀部紧翘，皮肤白皙", "外貌"],
+              "职业": ["短视频创作者", "内容创作"], "性格": ["内向温柔、细心体贴", "性格"],
+              "恋情": ["单身", "恋情"], "内心": ["希望这里能成为创作的温馨港湾", "内心"],
+              "状态": ["刚搬入，正在整理行李", "状态"], "穿搭": ["清新白T恤配牛仔短裤", "穿搭"],
+              "好感度": [50, "好感度"], "性欲": [20, "性欲"],
+              "入住日期": ["10月28日", "入住日期"], "入住天数": [0, "天数"],
+              "当前位置": ["201", "位置"], "创作内容": ["校园穿搭/日常vlog/美食探店", "创作内容"],
+              "关系": {"<user>": ["房东", "与房东的关系"]}
+          });//张小雪入住
+          _.set('公寓.房间列表[0].201.住户[0]', '未知', '张小雪');//入住201
+      </UpdateVariable>
+    
+    # 日期变化
+    date_change: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: New day, 08:00, 10月29日 星期三
+              STEP 2: 日期/星期/时间 Y
+              STEP 3-4: All tenants UPDATE 入住天数
+              STEP 5-7: All checks passed
+          </Analysis>
+          _.set('世界.日期[0]', '10月28日', '10月29日');//日期推进
+          _.set('世界.星期[0]', '星期二', '星期三');//星期更新
+          _.set('世界.时间[0]', '00:00', '08:00');//新的一天
+          _.add('租客列表[0].李雨晴.入住天数[0]', 1);//天数+1
+          _.add('租客列表[0].张小雪.入住天数[0]', 1);//天数+1
+      </UpdateVariable>
+    
+    # 购置新楼层（4个空房间）
+    buy_floor: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 30min, 14:30, buy 4th floor
+              STEP 2: 时间 Y
+              STEP 5: Room Y (401/402/403/404 空房间)
+              STEP 6-7: All YES, room numbers correct
+          </Analysis>
+          _.set('世界.时间[0]', '14:00', '14:30');//时间推进
+          _.insert('公寓.楼层配置', '四楼', {"显示名称":["四楼","显示"],"顺序":[4,"排序"]});//购置四楼
+          _.insert('公寓.房间列表[0]', '401', {"类型":["空房间","未装修"],"名称":["401","号"],"描述":["未装修的空房间","描述"],"布局":{"楼层":"四楼","单元":"A"}});//401空房间
+          _.insert('公寓.房间列表[0]', '402', {"类型":["空房间","未装修"],"名称":["402","号"],"描述":["未装修的空房间","描述"],"布局":{"楼层":"四楼","单元":"B"}});//402空房间
+          _.insert('公寓.房间列表[0]', '403', {"类型":["空房间","未装修"],"名称":["403","号"],"描述":["未装修的空房间","描述"],"布局":{"楼层":"四楼","单元":"C"}});//403空房间
+          _.insert('公寓.房间列表[0]', '404', {"类型":["空房间","未装修"],"名称":["404","号"],"描述":["未装修的空房间","描述"],"布局":{"楼层":"四楼","单元":"D"}});//404空房间
+      </UpdateVariable>
+    
+    # 装修空房间为标准套间
+    renovate_suite: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 15min, 15:00, renovate 402
+              STEP 2: 时间 Y
+              STEP 5: Room Y (402装修为套间)
+              STEP 6-7: All YES
+          </Analysis>
+          _.set('世界.时间[0]', '14:45', '15:00');//时间推进
+          _.set('公寓.房间列表[0].402.类型[0]', '空房间', '套间');//装修为套间
+          _.set('公寓.房间列表[0].402.描述[0]', '未装修的空房间', '一室一厅一卫一厨，35-50㎡个人公寓');//更新描述
+          _.insert('公寓.房间列表[0].402', '住户', ['未知', '住户']);//添加住户字段
+      </UpdateVariable>
+    
+    # 装修空房间为功能性房间
+    renovate_functional: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 20min, 16:30, renovate 403 to reading room
+              STEP 2: 时间 Y
+              STEP 5: Room Y (403装修为阅览室)
+              STEP 6-7: All YES
+          </Analysis>
+          _.set('世界.时间[0]', '16:10', '16:30');//时间推进
+          _.set('公寓.房间列表[0].403.类型[0]', '空房间', '阅览室');//装修为阅览室
+          _.set('公寓.房间列表[0].403.描述[0]', '未装修的空房间', '温馨安静的阅读空间，配有书架和沙发');//更新描述
+          _.insert('公寓.房间列表[0].403', '功能区', ['阅读区/休息区', '功能分区']);//添加功能区
+      </UpdateVariable>
+    
+    # 拆除房间
+    demolish_room: |-
+      <UpdateVariable>
+          <Analysis>
+              STEP 1: 10min, 10:30, demolish 402 (vacant suite)
+              STEP 2: 时间 Y
+              STEP 5: Room Y (402拆除为空房间)
+              STEP 6-7: All YES
+          </Analysis>
+          _.set('世界.时间[0]', '10:20', '10:30');//时间推进
+          _.set('公寓.房间列表[0].402.类型[0]', '套间', '空房间');//拆除为空房间
+          _.set('公寓.房间列表[0].402.描述[0]', '一室一厅一卫一厨，35-50㎡个人公寓', '未装修的空房间');//重置描述
+          _.remove('公寓.房间列表[0].402', '住户');//移除住户字段
+      </UpdateVariable>

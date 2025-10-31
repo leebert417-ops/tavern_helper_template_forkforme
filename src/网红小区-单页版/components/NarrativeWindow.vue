@@ -5,20 +5,16 @@
       <span>叙事窗口</span>
     </div>
     <div class="apt-card-body custom-scrollbar" ref="narrativeBody">
-      <div v-if="narrativeEntries.length === 0" class="empty-state">
+      <div v-if="store.narrativeLog.length === 0" class="empty-state">
         <div class="empty-icon">📝</div>
         <div class="empty-text">暂无叙事内容</div>
         <div class="empty-hint">与租客互动或推进时间时，叙事内容将显示在这里</div>
       </div>
 
       <div v-else class="narrative-list">
-        <div
-          v-for="(entry, index) in narrativeEntries"
-          :key="index"
-          :class="['narrative-entry', entry.type]"
-        >
-          <div class="entry-time">{{ entry.time }}</div>
-          <div class="entry-content" v-html="entry.content"></div>
+        <div v-for="entry in store.narrativeLog" :key="entry.id" :class="['narrative-entry', entry.type]">
+          <div class="entry-time">{{ entry.timestamp }}</div>
+          <div class="entry-content">{{ entry.text }}</div>
         </div>
       </div>
     </div>
@@ -36,42 +32,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import { useGameStore } from '../gameStore';
 
 const store = useGameStore();
 
-// 叙事内容条目
-interface NarrativeEntry {
-  time: string;
-  content: string;
-  type: 'system' | 'action' | 'dialogue' | 'event';
-}
-
-// 叙事内容列表
-const narrativeEntries = ref<NarrativeEntry[]>([]);
-
 // DOM 引用
 const narrativeBody = ref<HTMLElement | null>(null);
 
-// 添加叙事条目
-function addNarrativeEntry(content: string, type: NarrativeEntry['type'] = 'system') {
-  const entry: NarrativeEntry = {
-    time: store.world.时间,
-    content,
-    type,
-  };
-  narrativeEntries.value.push(entry);
-
-  // 自动滚动到底部
-  nextTick(() => {
-    scrollToBottom();
-  });
-}
-
 // 清空叙事内容
 function clearNarrative() {
-  narrativeEntries.value = [];
+  store.clearNarrativeLog();
 }
 
 // 滚动到底部
@@ -81,34 +52,15 @@ function scrollToBottom() {
   }
 }
 
-// 监听游戏时间变化，添加时间推进提示
-let lastTime = store.world.时间;
+// 监听 narrativeLog 变化，自动滚动到底部
 watch(
-  () => store.world.时间,
-  (newTime) => {
-    if (newTime !== lastTime) {
-      addNarrativeEntry(
-        `<span class="time-change">⏰ 时间推进到 ${newTime}</span>`,
-        'system'
-      );
-      lastTime = newTime;
-    }
-  }
+  () => store.narrativeLog.length,
+  () => {
+    nextTick(() => {
+      scrollToBottom();
+    });
+  },
 );
-
-// 初始欢迎消息
-addNarrativeEntry(
-  `<strong>欢迎来到网红小区</strong><br>
-  这是一个充满活力的社区，住着许多从事内容创作的年轻租客。<br>
-  作为房东，你可以与租客互动，管理公寓，体验精彩的故事。`,
-  'event'
-);
-
-// 暴露方法供其他组件使用
-defineExpose({
-  addNarrativeEntry,
-  clearNarrative,
-});
 </script>
 
 <style lang="scss" scoped>

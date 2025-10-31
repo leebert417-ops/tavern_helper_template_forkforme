@@ -3,47 +3,71 @@
     <div class="apt-card-title">
       <span>🏢</span>
       <span>公寓地图</span>
+      <span class="subtitle">点击房间查看详情</span>
     </div>
     <div class="apt-card-body custom-scrollbar">
       <!-- 按楼层倒序显示（三楼在最上面） -->
-      <div
-        v-for="(floorConfig, floorKey) in sortedFloors"
-        :key="floorKey"
-        class="floor-level"
-      >
+      <div v-for="(floorConfig, floorKey) in sortedFloors" :key="floorKey" class="floor-level">
         <div class="floor-title">
           {{ floorConfig.显示名称 }}
         </div>
         <div class="floor-grid">
+          <!-- 遍历处理后的房间列表（合并了公共区域） -->
           <div
-            v-for="(room, roomId) in getFloorRooms(floorKey)"
-            :key="roomId"
-            :class="['room-card', getRoomClass(room)]"
-            @click="onRoomClick(roomId, room)"
+            v-for="roomGroup in getFloorRoomGroups(floorKey)"
+            :key="roomGroup.id"
+            :class="['room-card', getRoomClass(roomGroup), { 'double-width': roomGroup.isMerged }]"
+            @click="onRoomClick(roomGroup)"
           >
-            <div class="room-name">{{ roomId }}</div>
-            <div class="room-type">{{ room.类型 }}</div>
-            <div v-if="room.住户" class="room-occupant">{{ room.住户 }}</div>
+            <!-- 左侧：房间基础信息 -->
+            <div class="room-info">
+              <div class="room-id">{{ getRoomIdDisplay(roomGroup) }}</div>
+              <div class="room-name">{{ roomGroup.类型 }}</div>
+            </div>
 
-            <!-- 显示当前在房间里的角色 -->
-            <div v-if="getRoomOccupants(roomId).length > 0" class="room-people">
-              <div v-for="person in getRoomOccupants(roomId)" :key="person.name" class="person-indicator">
-                {{ person.icon }} {{ person.name }}
+            <!-- 右侧：当前在这里的人 -->
+            <div class="room-occupants">
+              <div v-if="getRoomGroupOccupants(roomGroup).length > 2" class="occupants-summary">
+                <span class="summary-icon">👥</span>
+                <span class="summary-text">{{ getRoomGroupOccupants(roomGroup).length }}人</span>
               </div>
+              <div v-else-if="getRoomGroupOccupants(roomGroup).length > 0" class="occupants-list">
+                <div v-for="person in getRoomGroupOccupants(roomGroup)" :key="person.name" class="person-indicator">
+                  <span class="person-icon">{{ person.icon }}</span>
+                  <span class="person-name">{{ person.name }}</span>
+                </div>
+              </div>
+              <div v-else class="empty-indicator">空</div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- 房间详情弹窗 -->
+    <RoomDetailModal ref="roomDetailModal" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useGameStore } from '../gameStore';
 import _ from 'lodash';
+import { computed, ref } from 'vue';
+import { useGameStore } from '../gameStore';
+import RoomDetailModal from './RoomDetailModal.vue';
 
 const store = useGameStore();
+const roomDetailModal = ref<InstanceType<typeof RoomDetailModal> | null>(null);
+
+// 房间组接口
+interface RoomGroup {
+  id: string;
+  displayName: string;
+  类型: string;
+  住户?: string;
+  功能区?: string;
+  roomIds: string[]; // 包含的房间ID列表（合并房间会有多个）
+  isMerged: boolean; // 是否是合并的房间
+}
 
 // 按顺序（从高到低）排序楼层
 const sortedFloors = computed(() => {
@@ -51,24 +75,83 @@ const sortedFloors = computed(() => {
   return _.orderBy(
     Object.entries(floors).map(([key, value]) => ({ key, ...value })),
     ['顺序'],
-    ['desc']
-  ).reduce((acc, floor) => {
-    acc[floor.key] = floor;
-    return acc;
-  }, {} as Record<string, any>);
+    ['desc'],
+  ).reduce(
+    (acc, floor) => {
+      acc[floor.key] = floor;
+      return acc;
+    },
+    {} as Record<string, any>,
+  );
 });
 
-// 获取指定楼层的所有房间
-function getFloorRooms(floorKey: string) {
+// 获取指定楼层的房间组（合并公共区域）
+function getFloorRoomGroups(floorKey: string): RoomGroup[] {
   const rooms = store.apartments.房间列表;
-  return _.pickBy(rooms, room => room.布局?.楼层 === floorKey);
+  const floorRooms = _.pickBy(rooms, room => room.布局?.楼层 === floorKey);
+
+  const roomGroups: RoomGroup[] = [];
+  const processedRoomIds = new Set<string>();
+
+  // 按房间ID排序
+  const sortedRoomIds = Object.keys(floorRooms).sort();
+
+  for (const roomId of sortedRoomIds) {
+    if (processedRoomIds.has(roomId)) continue;
+
+    const room = floorRooms[roomId];
+    const roomType = room.类型;
+
+    // 检查是否需要合并
+    if (roomType === '公共客厅' && floorKey === '一楼') {
+      // 合并101和102
+      const relatedRooms = ['101', '102'].filter(id => floorRooms[id]);
+      relatedRooms.forEach(id => processedRoomIds.add(id));
+
+      roomGroups.push({
+        id: 'lounge-merged',
+        displayName: '公共客厅',
+        类型: '公共客厅',
+        功能区: '会客区、用餐区、休息区、娱乐区',
+        roomIds: relatedRooms,
+        isMerged: true,
+      });
+    } else if (roomType === '健身房' && floorKey === '一楼') {
+      // 合并103和104
+      const relatedRooms = ['103', '104'].filter(id => floorRooms[id]);
+      relatedRooms.forEach(id => processedRoomIds.add(id));
+
+      roomGroups.push({
+        id: 'gym-merged',
+        displayName: '健身房',
+        类型: '健身房',
+        功能区: '健身设备区、瑜伽区、舞蹈区',
+        roomIds: relatedRooms,
+        isMerged: true,
+      });
+    } else {
+      // 普通房间，不合并
+      processedRoomIds.add(roomId);
+      roomGroups.push({
+        id: roomId,
+        displayName: roomId,
+        类型: roomType,
+        住户: room.住户,
+        功能区: room.功能区,
+        roomIds: [roomId],
+        isMerged: false,
+      });
+    }
+  }
+
+  return roomGroups;
 }
 
-// 获取房间的样式类
-function getRoomClass(room: any) {
-  const type = room.类型;
+// 获取房间组的样式类
+function getRoomClass(roomGroup: RoomGroup) {
+  const type = roomGroup.类型;
   if (type === '套间') {
-    return room.住户 === '未知' ? 'bedroom vacant' : 'bedroom';
+    return roomGroup.住户 === '未知' ? 'bedroom vacant' : 'bedroom';
   } else if (type === '您的房间') {
     return 'your';
   } else if (type === '公共客厅') {
@@ -83,29 +166,41 @@ function getRoomClass(room: any) {
   return 'custom-functional';
 }
 
-// 获取当前在房间里的所有人（包括玩家和租客）
-function getRoomOccupants(roomId: string) {
+// 获取房间组中的所有人（包括玩家和租客）
+function getRoomGroupOccupants(roomGroup: RoomGroup) {
   const occupants: Array<{ name: string; icon: string }> = [];
 
-  // 检查玩家是否在此房间
-  if (store.player.currentLocation === roomId) {
-    occupants.push({ name: '你', icon: '👤' });
-  }
+  // 遍历房间组包含的所有房间ID
+  for (const roomId of roomGroup.roomIds) {
+    // 检查玩家是否在此房间
+    if (store.player.currentLocation === roomId) {
+      occupants.push({ name: '你', icon: '👤' });
+    }
 
-  // 检查租客是否在此房间
-  for (const [tenantName, tenant] of Object.entries(store.tenants)) {
-    if (tenant.当前位置 === roomId) {
-      occupants.push({ name: tenantName, icon: '👥' });
+    // 检查租客是否在此房间
+    for (const [tenantName, tenant] of Object.entries(store.tenants)) {
+      if (tenant.当前位置 === roomId) {
+        occupants.push({ name: tenantName, icon: '👥' });
+      }
     }
   }
 
-  return occupants;
+  // 去重（如果有重复）
+  return _.uniqBy(occupants, 'name');
 }
 
-// 房间点击事件
-function onRoomClick(roomId: string, room: any) {
-  console.log('点击房间:', roomId, room);
-  // TODO: 可以添加更多交互，如显示房间详情、移动玩家等
+// 获取房间ID显示
+function getRoomIdDisplay(roomGroup: RoomGroup): string {
+  if (roomGroup.isMerged) {
+    return roomGroup.roomIds.join('-');
+  }
+  return roomGroup.roomIds[0];
+}
+
+// 房间点击事件 - 打开详情弹窗
+function onRoomClick(roomGroup: RoomGroup) {
+  console.log('点击房间组:', roomGroup);
+  roomDetailModal.value?.openModal(roomGroup);
 }
 </script>
 
@@ -114,6 +209,14 @@ function onRoomClick(roomId: string, room: any) {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.subtitle {
+  margin-left: auto;
+  font-size: 0.75em;
+  color: var(--apt-text-secondary);
+  opacity: 0.7;
+  font-weight: 400;
 }
 
 .apt-card-body {
@@ -156,14 +259,13 @@ function onRoomClick(roomId: string, room: any) {
 
 .room-card {
   border-radius: 10px;
-  padding: 12px 8px;
+  padding: 10px;
   min-height: 100px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  font-weight: 600;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 8px;
   font-size: 0.85em;
   border: 2px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -175,6 +277,106 @@ function onRoomClick(roomId: string, room: any) {
     transform: translateY(-2px);
     box-shadow: 0 6px 16px rgba(255, 107, 157, 0.3);
     border-color: var(--apt-primary);
+  }
+
+  // 合并房间占据两格宽度
+  &.double-width {
+    grid-column: span 2;
+  }
+
+  // 左侧：房间基础信息
+  .room-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    text-align: left;
+    min-width: 0; // 允许文字截断
+  }
+
+  .room-id {
+    font-weight: 700;
+    font-size: 1.1em;
+    color: var(--apt-text);
+    opacity: 0.9;
+  }
+
+  .room-name {
+    font-weight: 600;
+    font-size: 0.95em;
+    color: var(--apt-text-secondary);
+  }
+
+  // 右侧：当前在这里的人
+  .room-occupants {
+    flex-shrink: 0;
+    width: 80px; // 从 60px 增加到 80px，确保能显示四字人名
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    padding-left: 8px;
+  }
+
+  .occupants-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 4px;
+    background: rgba(255, 107, 157, 0.2);
+    border-radius: 6px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .summary-icon {
+    font-size: 1.5em;
+  }
+
+  .summary-text {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: var(--apt-text);
+  }
+
+  .occupants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .person-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8em; // 从 0.75em 增加到 0.8em
+    background: rgba(255, 255, 255, 0.1);
+    padding: 3px 5px; // 从 2px 4px 增加到 3px 5px
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .person-icon {
+    flex-shrink: 0;
+    font-size: 1.2em;
+  }
+
+  .person-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .empty-indicator {
+    font-size: 0.75em;
+    color: var(--apt-text-secondary);
+    opacity: 0.5;
   }
 
   // 房间类型样式
@@ -217,41 +419,5 @@ function onRoomClick(roomId: string, room: any) {
     background: var(--room-custom);
     border-color: rgba(52, 211, 153, 0.8);
   }
-}
-
-.room-name {
-  font-weight: bold;
-  font-size: 1em;
-  margin-bottom: 4px;
-}
-
-.room-type {
-  font-size: 0.75em;
-  opacity: 0.9;
-  margin-bottom: 2px;
-}
-
-.room-occupant {
-  font-size: 0.7em;
-  color: var(--apt-dim);
-  margin-top: 2px;
-}
-
-.room-people {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  width: 100%;
-}
-
-.person-indicator {
-  font-size: 0.7em;
-  margin: 2px 0;
-  padding: 2px 4px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 </style>

@@ -4,15 +4,13 @@
       <span>📊</span>
       <span>游戏状态</span>
     </div>
-    <div class="apt-card-body">
+    <div class="apt-card-body custom-scrollbar">
       <!-- 时间信息 -->
       <div class="status-section">
         <div class="section-title">⏰ 当前时间</div>
         <div class="time-display">
           <div class="time-large">{{ store.world.时间 }}</div>
-          <div class="date-info">
-            {{ store.world.年份 }} {{ store.world.日期 }} {{ store.world.星期 }}
-          </div>
+          <div class="date-info">{{ store.world.年份 }} {{ store.world.日期 }} {{ store.world.星期 }}</div>
         </div>
       </div>
 
@@ -42,13 +40,9 @@
         </div>
         <div v-if="nearbyTenants.length > 0" class="nearby-tenants">
           <div class="subsection-title">附近的租客:</div>
-          <div v-for="tenant in nearbyTenants" :key="tenant" class="tenant-tag">
-            👤 {{ tenant }}
-          </div>
+          <div v-for="tenant in nearbyTenants" :key="tenant" class="tenant-tag">👤 {{ tenant }}</div>
         </div>
-        <div v-else class="info-text">
-          当前房间没有其他人
-        </div>
+        <div v-else class="info-text">当前房间没有其他人</div>
       </div>
     </div>
   </div>

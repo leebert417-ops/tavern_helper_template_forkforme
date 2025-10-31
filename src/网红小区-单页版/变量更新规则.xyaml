@@ -1,0 +1,168 @@
+---
+变量更新规则:
+  world.年份:
+    type: string
+    range: 格式为 "YYYY年"
+    check:
+      - 通常保持不变，除非游戏时间跨越年份
+
+  world.日期:
+    type: string
+    range: 格式为 "MM月DD日"
+    check:
+      - 当游戏时间推进超过24小时时更新
+      - 根据实际日历规则计算
+
+  world.星期:
+    type: string
+    range: "星期一" 到 "星期日"
+    check:
+      - 与日期同步更新
+      - 根据日期计算对应的星期
+
+  world.时间:
+    type: string
+    range: 格式为 "HH:MM"，24小时制
+    check:
+      - 每次调用 advanceTime() 时更新
+      - 玩家执行行动时可能推进时间
+      - 特殊事件可能导致时间跳跃
+
+  world.地点:
+    type: string
+    range: 描述性字符串，通常为 "东海市·荟萃城"
+    check:
+      - 通常保持不变，除非发生特殊剧情
+
+  tenants.{租客名}.年龄:
+    type: number
+    range: 18-40
+    check:
+      - 通常保持不变
+
+  tenants.{租客名}.外貌:
+    type: string
+    range: 详细的外貌描述
+    check:
+      - 通常保持不变
+      - 特殊事件（如换发型）可能更新
+
+  tenants.{租客名}.职业:
+    type: string
+    range: 职业描述
+    check:
+      - 通常保持不变
+      - 重大剧情可能导致职业变化
+
+  tenants.{租客名}.性格:
+    type: string
+    range: 性格描述
+    check:
+      - 通常保持不变
+      - 长期互动可能微调性格描述
+
+  tenants.{租客名}.恋情:
+    type: string
+    range: "单身"、"恋爱中"、"已婚" 等
+    check:
+      - 当好感度达到特定阈值时可能更新
+      - 特殊剧情事件触发时更新
+
+  tenants.{租客名}.内心:
+    type: string
+    range: 内心想法描述
+    check:
+      - 重要互动后可能更新
+      - 反映租客当前的心理状态
+
+  tenants.{租客名}.状态:
+    type: string
+    range: 当前状态描述
+    check:
+      - 每次时间推进时根据日程表更新
+      - 互动时根据情境更新
+      - 特殊事件触发时更新
+
+  tenants.{租客名}.穿搭:
+    type: string
+    range: 服装描述
+    check:
+      - 时间推进时可能根据场景更新
+      - 特殊事件时更新
+
+  tenants.{租客名}.好感度:
+    type: number
+    range: 0-100，初始值通常为 50
+    check:
+      - 正面互动时增加（通常 +3 到 +10）
+      - 负面互动时减少（通常 -3 到 -10）
+      - 送礼物、帮助租客时增加
+      - 冷落、拒绝请求时减少
+      - 达到特定阈值（如 70、90）时可能触发特殊事件
+
+  tenants.{租客名}.性欲:
+    type: number
+    range: 0-100，初始值通常为 20-30
+    check:
+      - 亲密互动时增加
+      - 长时间未互动时自然增长
+      - 发生亲密事件后重置或降低
+      - 达到特定阈值（如 60、80）时可能触发特殊事件
+
+  tenants.{租客名}.入住日期:
+    type: string
+    range: 格式为 "MM月DD日"
+    check:
+      - 租客入住时设置，之后保持不变
+
+  tenants.{租客名}.入住天数:
+    type: number
+    range: 大于等于 0
+    check:
+      - 每次日期变更时自动增加 1
+
+  tenants.{租客名}.当前位置:
+    type: string
+    range: 房间号（如 "201"、"103"）
+    check:
+      - 每次时间推进时根据日程表自动更新
+      - 特殊事件可能临时改变位置
+
+  tenants.{租客名}.创作内容:
+    type: string
+    range: 创作内容描述
+    check:
+      - 通常保持不变
+      - 职业变化时可能更新
+
+  tenants.{租客名}.关系:
+    type: object
+    range: 键为人物名称，值为关系描述
+    check:
+      - 可以动态添加新的关系（使用 _.insert）
+      - 关系描述可以更新（使用 _.set）
+      - 好感度变化时可能更新与房东的关系描述
+
+  tenants.{租客名}.记忆:
+    type: array
+    range: 字符串数组，每个元素为一段记忆
+    check:
+      - 重要互动后添加新记忆（使用 _.insert）
+      - 特殊事件后添加记忆
+      - 通常不删除记忆，除非特殊剧情需要
+
+  player.currentLocation:
+    type: string
+    range: 房间号（如 "203"、"101"）
+    check:
+      - 玩家执行移动操作时更新
+      - 特殊事件可能强制移动玩家
+
+  narrativeLog:
+    type: array
+    range: 叙事消息对象数组
+    check:
+      - 每次互动、时间推进、事件触发时添加新消息
+      - 通常不删除，除非玩家清空日志
+      - 使用 _.insert 添加新消息
+

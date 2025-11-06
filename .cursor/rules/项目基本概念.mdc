@@ -39,13 +39,6 @@ alwaysApply: true
 
 以上接口在代码中均可直接使用, 不需要导入或新定义它们, 也不需要检查是否可用.
 
-### 工具函数
-
-在 `src/util` 中定义了一些工具函数:
-
-- `src/util/script.ts`: 脚本可能使用的函数
-- `src/util/common.ts`: 前端界面或脚本可能使用的函数
-
 ## 特殊导入方式
 
 ### 导入文件内容
@@ -122,21 +115,6 @@ watchEffect(() => replaceVariables(klona(settings.value), { type: 'script', scri
 ```
 
 前端界面和脚本都是 iframe, 因此你在使用 vue-router 时, 应该使用 `history: createMemoryHistory()` 来创建路由, 否则将无法正常路由.
-
-### 优先使用 pinia、zod 管理数据状态
-
-当需要从酒馆读取配置/数据时, 你应该用 pinia 实现响应式读写:
-
-```typescript
-const Settings = z.object({ button_selected: z.boolean().default(false) }).prefault({});
-export const useSettingsStore = defineStore('settings', () => {
-  const settings = ref(Settings.parse(getVariables({ type: 'script', script_id: getScriptId() })));
-  watchEffect(() => {
-    replaceVariables(klona(settings.value), { type: 'script', script_id: getScriptId() });
-  });
-  return { settings };
-});
-```
 
 ### 尝试使用 @pixi/react 编写界面
 

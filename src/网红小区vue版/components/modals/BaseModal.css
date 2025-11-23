@@ -1,0 +1,90 @@
+
+.ngq-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--apt-z-modal) !important;
+}
+
+.ngq-modal-content {
+  background: var(--apt-card);
+  color: var(--apt-text);
+  padding: 28px;
+  border-radius: 20px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--apt-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 2px solid var(--apt-border);
+}
+
+.ngq-modal-title {
+  margin: 0;
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--apt-primary);
+}
+
+.ngq-modal-subtitle {
+  color: var(--apt-dim);
+  margin: 0;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.ngq-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.ngq-modal-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: var(--apt-radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--apt-transition-normal);
+}
+
+.ngq-modal-btn-confirm {
+  background: var(--apt-primary);
+  color: #fff;
+}
+
+.ngq-modal-btn-confirm:hover {
+  background: var(--apt-secondary);
+  transform: translateY(-1px);
+}
+
+.ngq-modal-btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--apt-text);
+}
+
+.ngq-modal-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Transition styles */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity var(--apt-transition-normal);
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}

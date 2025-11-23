@@ -1,0 +1,106 @@
+
+.ngq-info-section {
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--apt-border);
+}
+.ngq-info-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.tenant-section {
+  border-top: 1px solid var(--apt-border);
+  padding-top: 16px;
+  margin-top: 8px;
+}
+
+.ngq-section-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--apt-primary);
+}
+
+.ngq-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.ngq-info-row:last-child {
+  border-bottom: none;
+}
+
+.ngq-info-block {
+  display: block;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.ngq-info-block:last-child {
+  border-bottom: none;
+}
+
+.ngq-info-label {
+  color: var(--apt-dim);
+  font-size: 14px;
+}
+
+.ngq-info-block .ngq-info-label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.ngq-info-value {
+  color: var(--apt-text);
+  font-weight: 500;
+  text-align: right;
+  line-height: 1.5;
+}
+
+.ngq-info-block .ngq-info-value {
+  text-align: left;
+}
+
+/* 进度条 */
+.ngq-progress-bar {
+  width: 100%;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 6px;
+}
+
+.ngq-progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.ngq-progress-fill.favor {
+  background: linear-gradient(90deg, #ff6b9d 0%, #ff8fab 100%);
+}
+
+.ngq-progress-fill.lust {
+  background: linear-gradient(90deg, #ff4757 0%, #ff6348 100%);
+}
+
+.ngq-empty-subtle {
+  text-align: center;
+  padding: 20px;
+  color: var(--apt-dim);
+}
+
+.demolish-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+}

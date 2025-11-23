@@ -1,0 +1,53 @@
+
+#ngq-vue-app .ngq-card {
+  background: var(--apt-card);
+  border: 1px solid var(--apt-border);
+  border-radius: var(--apt-radius-md);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+#ngq-vue-app .ngq-card-title {
+  display: flex;
+  align-items: center;
+  gap: var(--apt-spacing-sm);
+  padding: 12px 16px;
+  background: rgba(255, 107, 157, 0.15);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+#ngq-vue-app .ngq-card-body {
+  padding: 16px;
+}
+
+#ngq-vue-app .ngq-management-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+#ngq-vue-app .ngq-management-actions .ngq-btn {
+  flex: 1;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) and (orientation: portrait) {
+  #ngq-vue-app .ngq-management-actions {
+    flex-direction: column;
+  }
+  
+  #ngq-vue-app .ngq-management-actions .ngq-btn {
+    width: 100%;
+  }
+}
+
+#ngq-vue-app .ngq-hint {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(255,107,157,0.1);
+  border-radius: var(--apt-radius-sm);
+  font-size: 13px;
+  color: var(--apt-dim);
+  line-height: 1.5;
+}

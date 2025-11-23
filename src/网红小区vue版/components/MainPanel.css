@@ -1,0 +1,125 @@
+
+/* ==================== 主面板容器 ==================== */
+#ngq-vue-app .ngq-main-panel {
+  position: fixed !important;
+  width: 90vw !important;
+  max-width: 900px !important;
+  height: 85vh !important;
+  max-height: 650px !important;
+  background: var(--apt-gradient-bg);
+  border: 2px solid var(--apt-primary);
+  border-radius: var(--apt-radius-lg);
+  box-shadow: var(--apt-shadow-lg);
+  z-index: var(--apt-z-panel) !important;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--apt-text);
+  font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+}
+
+#ngq-vue-app .ngq-main-panel.dragging {
+  transition: none !important;
+}
+
+/* ==================== 头部 ==================== */
+#ngq-vue-app .ngq-header {
+  flex-shrink: 0;
+  padding: 16px 20px;
+  background: var(--apt-gradient-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  box-shadow: var(--apt-shadow-sm);
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none !important;
+}
+
+#ngq-vue-app .ngq-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#ngq-vue-app .ngq-header-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+#ngq-vue-app .ngq-header-subtitle {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+#ngq-vue-app .ngq-close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 32px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--apt-transition-normal);
+}
+
+#ngq-vue-app .ngq-close-btn:hover {
+  transform: scale(1.1);
+}
+
+/* ==================== 标签页导航 ==================== */
+#ngq-vue-app .ngq-tabs {
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+#ngq-vue-app .ngq-tab {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all var(--apt-transition-normal);
+  border-bottom: 2px solid transparent;
+  text-align: center;
+}
+
+#ngq-vue-app .ngq-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+#ngq-vue-app .ngq-tab.active {
+  color: var(--apt-primary);
+  border-bottom-color: var(--apt-primary);
+}
+
+#ngq-vue-app .ngq-tab-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  background: var(--apt-primary);
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ==================== 内容区域 ==================== */
+#ngq-vue-app .ngq-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}

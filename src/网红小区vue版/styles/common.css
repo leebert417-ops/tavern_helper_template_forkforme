@@ -9,196 +9,196 @@
 
 /* ==================== 全局样式重置 ====================*/
 
-* {
+#ngq-vue-app * {
   box-sizing: border-box;
 }
 
 /* ==================== 工具类 ====================*/
 
 /* 用户选择控制 */
-.user-select-none {
+#ngq-vue-app .user-select-none {
   user-select: none;
   -webkit-user-select: none;
 }
 
 /* 触摸操作控制 */
-.touch-action-none {
+#ngq-vue-app .touch-action-none {
   touch-action: none;
 }
 
 /* Flex 布局 */
-.flex {
+#ngq-vue-app .flex {
   display: flex;
 }
 
-.flex-col {
+#ngq-vue-app .flex-col {
   display: flex;
   flex-direction: column;
 }
 
-.items-center {
+#ngq-vue-app .items-center {
   align-items: center;
 }
 
-.justify-center {
+#ngq-vue-app .justify-center {
   justify-content: center;
 }
 
-.justify-between {
+#ngq-vue-app .justify-between {
   justify-content: space-between;
 }
 
-.flex-1 {
+#ngq-vue-app .flex-1 {
   flex: 1;
 }
 
-.flex-shrink-0 {
+#ngq-vue-app .flex-shrink-0 {
   flex-shrink: 0;
 }
 
 /* 文本对齐 */
-.text-center {
+#ngq-vue-app .text-center {
   text-align: center;
 }
 
-.text-left {
+#ngq-vue-app .text-left {
   text-align: left;
 }
 
-.text-right {
+#ngq-vue-app .text-right {
   text-align: right;
 }
 
 /* 文本样式 */
-.font-bold {
+#ngq-vue-app .font-bold {
   font-weight: 600;
 }
 
-.text-sm {
+#ngq-vue-app .text-sm {
   font-size: 12px;
 }
 
-.text-base {
+#ngq-vue-app .text-base {
   font-size: 14px;
 }
 
-.text-lg {
+#ngq-vue-app .text-lg {
   font-size: 16px;
 }
 
 /* 间距 */
-.gap-xs {
+#ngq-vue-app .gap-xs {
   gap: var(--apt-spacing-xs);
 }
 
-.gap-sm {
+#ngq-vue-app .gap-sm {
   gap: var(--apt-spacing-sm);
 }
 
-.gap-md {
+#ngq-vue-app .gap-md {
   gap: var(--apt-spacing-md);
 }
 
-.gap-lg {
+#ngq-vue-app .gap-lg {
   gap: var(--apt-spacing-lg);
 }
 
 /* 圆角 */
-.rounded-sm {
+#ngq-vue-app .rounded-sm {
   border-radius: var(--apt-radius-sm);
 }
 
-.rounded-md {
+#ngq-vue-app .rounded-md {
   border-radius: var(--apt-radius-md);
 }
 
-.rounded-lg {
+#ngq-vue-app .rounded-lg {
   border-radius: var(--apt-radius-lg);
 }
 
-.rounded-full {
+#ngq-vue-app .rounded-full {
   border-radius: var(--apt-radius-full);
 }
 
 /* 阴影 */
-.shadow-sm {
+#ngq-vue-app .shadow-sm {
   box-shadow: var(--apt-shadow-sm);
 }
 
-.shadow-md {
+#ngq-vue-app .shadow-md {
   box-shadow: var(--apt-shadow-md);
 }
 
-.shadow-lg {
+#ngq-vue-app .shadow-lg {
   box-shadow: var(--apt-shadow-lg);
 }
 
 /* 过渡 */
-.transition {
+#ngq-vue-app .transition {
   transition: all var(--apt-transition-normal);
 }
 
-.transition-fast {
+#ngq-vue-app .transition-fast {
   transition: all var(--apt-transition-fast);
 }
 
-.transition-slow {
+#ngq-vue-app .transition-slow {
   transition: all var(--apt-transition-slow);
 }
 
-.transition-none {
+#ngq-vue-app .transition-none {
   transition: none !important;
 }
 
 /* 光标 */
-.cursor-pointer {
+#ngq-vue-app .cursor-pointer {
   cursor: pointer;
 }
 
-.cursor-grab {
+#ngq-vue-app .cursor-grab {
   cursor: grab;
 }
 
-.cursor-grabbing {
+#ngq-vue-app .cursor-grabbing {
   cursor: grabbing;
 }
 
 /* 溢出控制 */
-.overflow-hidden {
+#ngq-vue-app .overflow-hidden {
   overflow: hidden;
 }
 
-.overflow-auto {
+#ngq-vue-app .overflow-auto {
   overflow: auto;
 }
 
-.overflow-y-auto {
+#ngq-vue-app .overflow-y-auto {
   overflow-y: auto;
 }
 
 /* 滚动条样式 */
-.custom-scrollbar::-webkit-scrollbar {
+#ngq-vue-app .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+#ngq-vue-app .custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
+#ngq-vue-app .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--apt-primary);
   border-radius: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+#ngq-vue-app .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--apt-secondary);
 }
 
 /* ==================== 按钮样式 ====================*/
 
-.ngq-btn {
+#ngq-vue-app .ngq-btn {
   padding: 10px 20px;
   background: var(--apt-gradient-primary);
   color: white;
@@ -212,42 +212,42 @@
   -webkit-user-select: none;
 }
 
-.ngq-btn:hover {
+#ngq-vue-app .ngq-btn:hover {
   transform: translateY(-2px);
   box-shadow: var(--apt-shadow-md);
 }
 
-.ngq-btn:active {
+#ngq-vue-app .ngq-btn:active {
   transform: translateY(0);
 }
 
-.ngq-btn:disabled {
+#ngq-vue-app .ngq-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.ngq-btn-secondary {
+#ngq-vue-app .ngq-btn-secondary {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--apt-border);
 }
 
-.ngq-btn-secondary:hover {
+#ngq-vue-app .ngq-btn-secondary:hover {
   background: rgba(255, 255, 255, 0.15);
 }
 
-.ngq-btn-small {
+#ngq-vue-app .ngq-btn-small {
   padding: 6px 12px;
   font-size: 12px;
 }
 
-.ngq-btn-large {
+#ngq-vue-app .ngq-btn-large {
   padding: 14px 28px;
   font-size: 16px;
 }
 
 /* ==================== 输入框样式 ====================*/
 
-.ngq-input {
+#ngq-vue-app .ngq-input {
   width: 100%;
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.05);
@@ -258,19 +258,19 @@
   transition: all var(--apt-transition-normal);
 }
 
-.ngq-input:focus {
+#ngq-vue-app .ngq-input:focus {
   outline: none;
   border-color: var(--apt-primary);
   background: rgba(255, 255, 255, 0.08);
 }
 
-.ngq-input::placeholder {
+#ngq-vue-app .ngq-input::placeholder {
   color: rgba(255, 255, 255, 0.3);
 }
 
 /* ==================== 空状态 ====================*/
 
-.ngq-empty {
+#ngq-vue-app .ngq-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -279,20 +279,20 @@
   color: var(--apt-dim);
 }
 
-.ngq-empty-icon {
+#ngq-vue-app .ngq-empty-icon {
   font-size: 48px;
   margin-bottom: 16px;
   opacity: 0.5;
 }
 
-.ngq-empty-text {
+#ngq-vue-app .ngq-empty-text {
   font-size: 14px;
   opacity: 0.7;
 }
 
 /* ==================== 加载状态 ====================*/
 
-.ngq-loading {
+#ngq-vue-app .ngq-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -301,13 +301,13 @@
   color: var(--apt-text);
 }
 
-.ngq-loading-icon {
+#ngq-vue-app .ngq-loading-icon {
   font-size: 32px;
   margin-bottom: 12px;
   animation: spin 1s linear infinite;
 }
 
-.ngq-loading-text {
+#ngq-vue-app .ngq-loading-text {
   font-size: 14px;
   opacity: 0.7;
 }

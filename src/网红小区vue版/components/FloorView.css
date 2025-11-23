@@ -1,0 +1,26 @@
+
+#ngq-vue-app .ngq-floor-level {
+  background: var(--apt-card);
+  border: 1px solid var(--apt-border);
+  border-radius: var(--apt-radius-lg);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+#ngq-vue-app .ngq-floor-level-title {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--apt-text);
+  display: flex;
+  align-items: center;
+  gap: var(--apt-spacing-sm);
+}
+
+#ngq-vue-app .ngq-floor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  width: 100%;
+}

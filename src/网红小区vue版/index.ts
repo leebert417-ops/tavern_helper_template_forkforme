@@ -7,9 +7,7 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
-
-// 导入全局样式
-import './styles/common.css';
+import { allStyles } from './styles';
 
 console.log('🏢 网红小区 Vue 版正在初始化...');
 
@@ -51,6 +49,11 @@ function destroyMountContainer(targetDoc: Document): void {
     container.remove();
     console.log('🗑️ 挂载容器已移除');
   }
+  const style = targetDoc.getElementById('ngq-vue-styles');
+  if (style) {
+    style.remove();
+    console.log('🗑️ 样式已移除');
+  }
 }
 
 /**
@@ -75,6 +78,13 @@ function initialize(): void {
       console.warn('⚠️ 应用已经初始化，跳过重复初始化');
       return;
     }
+
+    // 注入样式
+    const styleTag = targetDoc.createElement('style');
+    styleTag.id = 'ngq-vue-styles';
+    styleTag.textContent = allStyles;
+    targetDoc.head.appendChild(styleTag);
+    console.log('✅ 样式已手动注入');
 
     // 创建 Vue 应用
     const app = createNgqApp();

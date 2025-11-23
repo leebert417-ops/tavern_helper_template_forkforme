@@ -9,10 +9,12 @@ import type { Position } from '../types';
 export interface UseDragOptions {
   /** 元素引用 */
   elementRef: Ref<HTMLElement | null>;
-  /** 是否启用拖动 */
-  enabled?: Ref<boolean> | boolean;
   /** 拖动手柄元素引用（如果不提供，则整个元素可拖动） */
   handleRef?: Ref<HTMLElement | null>;
+  /** 响应式的位置引用 */
+  position: Ref<Position>;
+  /** 是否启用拖动 */
+  enabled?: Ref<boolean> | boolean;
   /** 是否限制在视口内 */
   constrainToViewport?: boolean;
   /** 边界偏移量（px） */
@@ -32,12 +34,6 @@ export interface UseDragOptions {
 export interface UseDragReturn {
   /** 是否正在拖动 */
   isDragging: Ref<boolean>;
-  /** 当前位置 */
-  position: Ref<Position>;
-  /** 手动设置位置 */
-  setPosition: (pos: Position) => void;
-  /** 重置位置 */
-  resetPosition: () => void;
 }
 
 /**
@@ -46,8 +42,9 @@ export interface UseDragReturn {
 export function useDrag(options: UseDragOptions): UseDragReturn {
   const {
     elementRef,
-    enabled = true,
     handleRef,
+    position,
+    enabled = true,
     constrainToViewport = true,
     boundaryOffset = 0,
     clickThreshold = 5,
@@ -58,7 +55,6 @@ export function useDrag(options: UseDragOptions): UseDragReturn {
   } = options;
 
   const isDragging = ref(false);
-  const position = ref<Position>({ left: 0, top: 0 });
 
   let dragData: {
     startX: number;
@@ -73,20 +69,6 @@ export function useDrag(options: UseDragOptions): UseDragReturn {
    */
   const isEnabled = (): boolean => {
     return typeof enabled === 'boolean' ? enabled : enabled.value;
-  };
-
-  /**
-   * 获取当前位置
-   */
-  const getCurrentPosition = (): Position => {
-    const element = elementRef.value;
-    if (!element) return { left: 0, top: 0 };
-
-    const computedStyle = window.getComputedStyle(element);
-    const left = parseInt(computedStyle.left) || 0;
-    const top = parseInt(computedStyle.top) || 0;
-
-    return { left, top };
   };
 
   /**
@@ -112,36 +94,21 @@ export function useDrag(options: UseDragOptions): UseDragReturn {
   };
 
   /**
-   * 应用位置
-   */
-  const applyPosition = (pos: Position): void => {
-    const element = elementRef.value;
-    if (!element) return;
-
-    const constrainedPos = constrainPosition(pos);
-    element.style.left = `${constrainedPos.left}px`;
-    element.style.top = `${constrainedPos.top}px`;
-    position.value = constrainedPos;
-  };
-
-  /**
    * 拖动开始
    */
   const handleDragStart = (clientX: number, clientY: number): boolean => {
     if (!isEnabled() || dragData) return false;
 
-    const currentPos = getCurrentPosition();
-
     dragData = {
       startX: clientX,
       startY: clientY,
-      initialLeft: currentPos.left,
-      initialTop: currentPos.top,
+      initialLeft: position.value.left,
+      initialTop: position.value.top,
       startTime: Date.now(),
     };
 
     isDragging.value = true;
-    onDragStart?.(currentPos);
+    onDragStart?.(position.value);
 
     return true;
   };
@@ -160,7 +127,7 @@ export function useDrag(options: UseDragOptions): UseDragReturn {
       top: dragData.initialTop + deltaY,
     };
 
-    applyPosition(newPos);
+    position.value = constrainPosition(newPos);
     onDragMove?.(position.value);
   };
 
@@ -172,16 +139,13 @@ export function useDrag(options: UseDragOptions): UseDragReturn {
 
     isDragging.value = false;
 
-    // 计算拖动距离
     const deltaX = clientX - dragData.startX;
     const deltaY = clientY - dragData.startY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    // 判断是否为点击
     const isClick = distance < clickThreshold;
 
-    const currentPos = getCurrentPosition();
-    onDragEnd?.(currentPos, isClick);
+    onDragEnd?.(position.value, isClick);
 
     if (isClick) {
       onClick?.();
@@ -249,70 +213,12 @@ export function useDrag(options: UseDragOptions): UseDragReturn {
     }
   };
 
-  /**
-   * 手动设置位置
-   */
-  const setPosition = (pos: Position): void => {
-    applyPosition(pos);
-  };
-
-  /**
-   * 重置位置
-   */
-  const resetPosition = (): void => {
-    setPosition({ left: 0, top: 0 });
-  };
-
-  /**
-   * 绑定事件
-   */
-  const bindEvents = (): void => {
-    const handle = handleRef?.value || elementRef.value;
-    if (!handle) return;
-
-    // 绑定拖动手柄事件
-    handle.addEventListener('mousedown', onMouseDown);
-    handle.addEventListener('touchstart', onTouchStart, { passive: false });
-
-    // 绑定文档事件
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('touchmove', onTouchMove, { passive: false });
-    document.addEventListener('mouseup', onMouseUp);
-    document.addEventListener('touchend', onTouchEnd);
-    document.addEventListener('touchcancel', onTouchEnd);
-  };
-
-  /**
-   * 解绑事件
-   */
-  const unbindEvents = (): void => {
-    const handle = handleRef?.value || elementRef.value;
-    if (handle) {
-      handle.removeEventListener('mousedown', onMouseDown);
-      handle.removeEventListener('touchstart', onTouchStart);
-    }
-
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('touchmove', onTouchMove);
-    document.removeEventListener('mouseup', onMouseUp);
-    document.removeEventListener('touchend', onTouchEnd);
-    document.removeEventListener('touchcancel', onTouchEnd);
-  };
-
-  // 生命周期
-  onMounted(() => {
-    bindEvents();
-  });
-
   onUnmounted(() => {
     unbindEvents();
   });
 
   return {
     isDragging,
-    position,
-    setPosition,
-    resetPosition,
   };
 }
 

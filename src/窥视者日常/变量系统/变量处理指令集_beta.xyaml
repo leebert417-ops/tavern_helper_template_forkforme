@@ -2,41 +2,45 @@
 <status_current_variables>
 {{get_message_variable::stat_data}}
 </status_current_variables>
+
 rule:
-  - You should output the update analysis in the end of the next reply.
-  - Use `_.set('path', 'old', 'new')` for direct assignment or state changes.
-  - Use `_.add('path', value)` to add or subtract a numerical value.
-  - Use `_.insert('path', 'item_or_key', 'value')` to add an element to an array or object.
-  - Use `_.remove('path', 'item_or_key')` to remove an element from an array or object.
-  - **CRITICAL**: Update `consciousness` (意识) based on drug effects or sleep. When < 30, target is unconscious.
-  - **CRITICAL**: Update `alertness` (警惕) if player leaves traces or makes noise.
-  - **CRITICAL**: Update `body_sensitivity` (开发度) after secret sexual interactions.
-  - **CRITICAL**: For Wang Yan, update `li_qiang_alertness` if Li Qiang notices something wrong.
-  - When using _.set with objects or arrays, do NOT wrap them in quotes - use direct object/array literals (e.g., {key: value} or [item1, item2])
-  - When using _.set with strings, DO wrap them in quotes (e.g., 'string value')
-  - When using _.set with numbers or booleans, do NOT use quotes (e.g., 42, true, false)
+  - 在下一次回复结尾输出 `<UpdateVariable>`，先列需要更新的变量，再列命令。
+  - `_.set('路径', '旧值', '新值')` 适用于字符串、对象、布尔；`_.add('路径', 数值)` 用于数值增减。
+  - `_.insert('路径', '键', 值)` 用于新增；`_.remove('路径', '键')` 删除。
+  - **重点关注字段**：
+    - `世界.日期/时间/星期/天气`：剧情推进或环境变化时更新。
+    - `玩家.位置`：潜入或离开房间必须同步。
+    - `角色.*.意识值`：睡眠、药物、疼痛都会变化，<30 视作失去意识。
+    - `角色.*.警戒度`：被惊动、察觉异常时增加；长期平静可小幅降低。
+    - `角色.*.身体敏感度`：任何隐秘触碰/刺激都要上调。
+    - `李强.警戒度`：周末在家时若发现异常立即增加。
+    - `摄像头.*.暴露度`：租客盯视或触碰摄像头时 +1~3。
+    - `设备.*`：使用后要把 `状态` 改为“释放中/冷却”等。
+    - `仓库.*.数量`：消耗、制作或购买后都要扣减/增加，数量为 0 可删除该键。
+  - `.set` 赋值对象/数组时不要加引号；字符串需要加引号；数字、布尔不加引号。
+
 format: |-
   <UpdateVariable>
     <Analysis>
-      ${variable_path}: ${Whether the variable should be updated: 'Yes' or 'No'}
+      ${变量路径}: ${'Yes' 或 'No'}
       ...
     </Analysis>
-    ${command_expression}; // ${brief reason for change}
+    ${命令}; // ${简短原因}
     ...
   </UpdateVariable>
+
 example: |-
   <UpdateVariable>
     <Analysis>
-      world.time: Yes
-      player.location: Yes
-      tenants.lin_xiaolu.params.alertness: Yes
-      tenants.lin_xiaolu.flags: Yes
-      tenants.wang_yan.params.li_qiang_alertness: Yes
-      inventory.items: No
+      世界.时间: Yes
+      玩家.位置: Yes
+      角色.林小鹿.意识值: Yes
+      角色.林小鹿.警戒度: Yes
+      摄像头.201_卧室角落.暴露度: No
+      仓库.镇静药片: No
     </Analysis>
-    _.set('world.time', '23:00', '23:15'); // 潜入行动耗时
-    _.set('player.location', '203', '201'); // 使用备用钥匙进入201
-    _.add('tenants.lin_xiaolu.params.alertness', 10); // 进门时发出了轻微声响
-    _.insert('tenants.lin_xiaolu.flags', 'restless_sleep', true); // 她似乎睡得不安稳
-    _.add('tenants.wang_yan.params.li_qiang_alertness', 5); // 李强觉得家里有点不对劲
+    _.set('世界.时间', '19:00', '19:10'); // 潜入行动耗费约10分钟
+    _.set('玩家.位置', '203', '201'); // 进入201房间
+    _.add('角色.林小鹿.意识值', -20); // 含药饮料开始生效
+    _.add('角色.林小鹿.警戒度', 8); // 被动惊动
   </UpdateVariable>

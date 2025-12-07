@@ -1,123 +1,113 @@
 // src/窥视者日常/store.ts
 import { defineStore } from 'pinia';
-import { ref } from 'vue'; // Removed watchEffect as we are not writing back
+import { ref } from 'vue';
 import { klona } from 'klona';
 
-// Define the structure of our game state based on 变量初始化_beta.xyaml
-interface PeepGameData {
-    world: {
-        day: number;
-        time: string;
-        weekday: string;
-        weather: string;
-    };
-    player: {
-        money: number;
-        energy: number;
-        location: string;
-        mode: 'monitor' | 'stealth';
-    };
-    inventory: {
-        items: string[];
-        cameras: { [key: string]: { type: string; status: string } };
-    };
-    tenants: {
-        [key: string]: { // Key will be character_id like "lin_xiaolu"
-            name: string;
-            room: string; // Room number (e.g., "201")
-            is_home: boolean;
-            state: string;
-            params: {
-                consciousness: number;
-                alertness: number;
-                trust: number;
-                depravity: number;
-                body_sensitivity: number;
-                li_qiang_alertness?: number; // Optional: only for Wang Yan
-            };
-            flags: { [key: string]: any }; // Assuming flags can be dynamic key-value pairs
-        };
-    };
+interface CharacterState {
+  位置: string;
+  状态: string;
+  心情: string;
+  好感度: number;
+  警戒度: number;
+  身体敏感度: number;
+  意识值: number;
 }
 
+interface CameraState {
+  安装位置: string;
+  暴露度: number;
+  摄像内容: string;
+}
+
+interface DeviceState {
+  安装位置: string;
+  状态: string;
+  作用: string;
+}
+
+interface WarehouseItem {
+  数量: number;
+  作用: string;
+}
+
+export interface PeepGameData {
+  世界: {
+    日期: string;
+    时间: string;
+    星期: string;
+    天气: string;
+  };
+  玩家: {
+    位置: string;
+  };
+  角色: Record<string, CharacterState>;
+  李强: {
+    位置: string;
+    警戒度: number;
+  };
+  摄像头: Record<string, CameraState>;
+  设备: Record<string, DeviceState>;
+  仓库: Record<string, WarehouseItem>;
+}
+
+const defaultState: PeepGameData = {
+  世界: { 日期: '', 时间: '00:00', 星期: '', 天气: '' },
+  玩家: { 位置: '' },
+  角色: {},
+  李强: { 位置: '', 警戒度: 0 },
+  摄像头: {},
+  设备: {},
+  仓库: {},
+};
+
 export const useGameStore = defineStore('peepGame', () => {
-    // Initialize with a default empty state to match the interface structure
-    const gameState = ref<PeepGameData>({
-        world: { day: 0, time: '00:00', weekday: '', weather: '' },
-        player: { money: 0, energy: 0, location: '', mode: 'monitor' },
-        inventory: { items: [], cameras: {} },
-        tenants: {} // Empty tenants initially, will be populated on refresh
-    });
+  const gameState = ref<PeepGameData>(klona(defaultState));
 
-    const refreshGameState = () => {
-        try {
-            let data: any = null;
+  const refreshGameState = () => {
+    try {
+      let data: any = null;
 
-            // 尝试从 MVU 获取最新数据
-            // @ts-ignore
-            if (typeof Mvu !== 'undefined') {
-                // @ts-ignore
-                const mvuResult = Mvu.getMvuData({
-                    type: 'message',
-                    message_id: 'latest',
-                });
-                data = mvuResult?.stat_data;
-            } 
-            // 尝试从父窗口 MVU 获取 (iframe 环境)
-            // @ts-ignore
-            else if (window.parent && typeof window.parent.Mvu !== 'undefined') {
-                // @ts-ignore
-                const mvuResult = window.parent.Mvu.getMvuData({
-                    type: 'message',
-                    message_id: 'latest',
-                });
-                data = mvuResult?.stat_data;
-            }
-            // 回退方案：尝试读取全局变量
-            else {
-                 const globalVars = getVariables({ type: 'global' });
-                 data = globalVars?.stat_data;
-            }
-            
-            if (data) {
-                // === 数据清洗：修复散落在 tenants 之外的人物数据 ===
-                if (!data.tenants) data.tenants = {};
-                
-                Object.keys(data).forEach(key => {
-                    const val = data[key];
-                    // 如果某个属性是对象，且包含 'room' 字段，且不在 tenants 里
-                    if (val && typeof val === 'object' && val.room && key !== 'tenants') {
-                        console.warn(`[窥视者日常] 发现散落的人物数据: ${key}，正在尝试归位...`);
-                        data.tenants[key] = val;
-                        // 可选：删除原来的散落数据，保持 stat_data 整洁
-                        // delete data[key]; 
-                    }
-                });
-                // ================================================
+      // @ts-ignore MVU 可能在全局或父窗口
+      if (typeof Mvu !== 'undefined') {
+        // @ts-ignore
+        const mvuResult = Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        data = mvuResult?.stat_data;
+      }
+      // @ts-ignore
+      else if (window.parent && typeof window.parent.Mvu !== 'undefined') {
+        // @ts-ignore
+        const mvuResult = window.parent.Mvu.getMvuData({ type: 'message', message_id: 'latest' });
+        data = mvuResult?.stat_data;
+      } else {
+        const globalVars = getVariables({ type: 'global' });
+        data = globalVars?.stat_data;
+      }
 
-                // Use klona for deep cloning to ensure reactivity and prevent
-                // direct mutation issues when assigning to gameState.value.
-                // Cast to PeepGameData to ensure type safety.
-                gameState.value = klona(data) as PeepGameData;
-                console.info('[窥视者日常] 游戏状态已刷新。');
-            } else {
-                console.warn('[窥视者日常] 未能获取到游戏数据 (stat_data)。请确保 MVU 已运行且变量已初始化。');
-            }
-        } catch (e) {
-            console.error('[窥视者日常] 刷新游戏状态时发生错误:', e);
-        }
-    };
+      if (data) {
+        const merged: PeepGameData = {
+          世界: { ...defaultState.世界, ...(data.世界 || {}) },
+          玩家: { ...defaultState.玩家, ...(data.玩家 || {}) },
+          角色: data.角色 || {},
+          李强: { ...defaultState.李强, ...(data.李强 || {}) },
+          摄像头: data.摄像头 || {},
+          设备: data.设备 || {},
+          仓库: data.仓库 || {},
+        };
 
-    // Perform an initial refresh when the store is created.
-    refreshGameState();
+        gameState.value = klona(merged);
+        console.info('[窥视者日常] 游戏状态已刷新');
+      } else {
+        console.warn('[窥视者日常] 未能获取到游戏数据(stat_data)');
+      }
+    } catch (error) {
+      console.error('[窥视者日常] 刷新游戏状态时发生错误:', error);
+    }
+  };
 
-    // Since initialization and updates are handled by other scripts,
-    // this store primarily acts as a reader. External mechanisms (e.g.,
-    // event listeners, polling) should call refreshGameState() to keep
-    // the UI updated when the underlying global variable changes.
+  refreshGameState();
 
-    return {
-        gameState,
-        refreshGameState, // Expose this method for external refresh triggers
-    };
+  return {
+    gameState,
+    refreshGameState,
+  };
 });

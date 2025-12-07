@@ -1,151 +1,120 @@
 {
-  "world": {
-    "$meta": {
-      "extensible": false,
-      "required": ["day", "time", "weekday", "weather"]
-    },
-    "day": 1,
-    "time": "19:00",
-    "weekday": "周五",
-    "weather": "阴"
+  "世界": {
+    "日期": "2025-07-01",
+    "时间": "19:00",
+    "星期": "周五",
+    "天气": "阴"
   },
 
-  "player": {
-    "$meta": {
-      "extensible": false,
-      "required": ["money", "energy", "location", "mode"]
-    },
-    "money": 5000,
-    "energy": 100,
-    "location": "203", 
-    "mode": "monitor"
+  "玩家": {
+    "位置": "203"
   },
-  
-  "inventory": {
-    "$meta": {
-      "extensible": false,
-      "required": ["items", "cameras"]
+
+  "角色": {
+    "林小鹿": {
+      "位置": "201",
+      "状态": "写代码",
+      "心情": "烦躁",
+      "好感度": 50,
+      "警戒度": 10,
+      "身体敏感度": 5,
+      "意识值": 100
     },
-    "items": [
-      "$__META_EXTENSIBLE__$",
-      "master_key_set", 
-      "smartphone"
-    ],
-    "cameras": {
-       "$meta": {
-        "extensible": true,
-        "template": {
-           "type": "basic",
-           "status": "online"
-        }
-      },
-      "201": { "type": "pinhole_basic", "status": "online" },
-      "走廊": { "type": "cctv", "status": "online" }
-      "洗衣房": { "type": "cctv", "status": "online" }
+    "陈蜜": {
+      "位置": "301",
+      "状态": "备稿",
+      "心情": "平静",
+      "好感度": 35,
+      "警戒度": 25,
+      "身体敏感度": 10,
+      "意识值": 100
+    },
+    "陈糖": {
+      "位置": "302",
+      "状态": "直播",
+      "心情": "兴奋",
+      "好感度": 30,
+      "警戒度": 15,
+      "身体敏感度": 15,
+      "意识值": 100
+    },
+    "王艳": {
+      "位置": "401",
+      "状态": "看电视",
+      "心情": "高涨",
+      "好感度": 20,
+      "警戒度": 15,
+      "身体敏感度": 25,
+      "意识值": 100
+    },
+    "李文静": {
+      "位置": "外出",
+      "状态": "补课",
+      "心情": "紧绷",
+      "好感度": 10,
+      "警戒度": 20,
+      "身体敏感度": 5,
+      "意识值": 100
+    },
+    "李思思": {
+      "位置": "401",
+      "状态": "玩玩具",
+      "心情": "开心",
+      "好感度": 60,
+      "警戒度": 5,
+      "身体敏感度": 5,
+      "意识值": 100
     }
   },
 
-  "tenants": {
-    "$meta": {
-      "extensible": false,
-      "required": ["lin_xiaolu", "chen_mi", "chen_tang", "wang_yan", "li_wenjing", "li_sisi"]
+  "李强": {
+    "位置": "港口宿舍",
+    "警戒度": 30
+  },
+
+  "摄像头": {
+    "201_卧室角落": {
+      "安装位置": "201房间书桌上方",
+      "暴露度": 0,
+      "摄像内容": ""
     },
-    // === 201 ===
-    "lin_xiaolu": {
-      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
-      "name": "林小鹿",
-      "room": "201",
-      "is_home": true,
-      "state": "writing_code",
-      "params": {
-        "consciousness": 100,
-        "body_sensitivity": 0,
-        "trust": 50,
-        "alertness": 0,
-        "depravity": 0
-      },
-      "flags": { "$meta": { "extensible": true, "template": true } }
+    "走廊_二层转角": {
+      "安装位置": "二层走廊靠近楼梯的转角",
+      "暴露度": 0,
+      "摄像内容": ""
     },
-    // === 301 ===
-    "chen_mi": {
-      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
-      "name": "陈蜜",
-      "room": "301", // 姐姐房间
-      "is_home": true,
-      "state": "cooking",
-      "params": {
-        "consciousness": 100,
-        "body_sensitivity": 0,
-        "trust": 40,
-        "alertness": 5,
-        "depravity": 5
-      },
-      "flags": { "$meta": { "extensible": true } }
+    "洗衣房_天花板": {
+      "安装位置": "303洗衣房天花板排风口附近",
+      "暴露度": 0,
+      "摄像内容": ""
+    }
+  },
+
+  "设备": {
+    "201_排风口": {
+      "安装位置": "201房间门口上方排风管",
+      "状态": "待命",
+      "作用": "释放指定气体",
     },
-    // === 301 ===
-    "chen_tang": {
-      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
-      "name": "陈糖",
-      "room": "302", // 妹妹房间/直播间
-      "is_home": true,
-      "state": "streaming",
-      "params": {
-        "consciousness": 100,
-        "body_sensitivity": 0,
-        "trust": 30,
-        "alertness": 0,
-        "depravity": 10
-      },
-      "flags": { "$meta": { "extensible": true } }
+    "公共客厅_排风口": {
+      "安装位置": "101公共客厅中央空调回风口",
+      "状态": "待命",
+      "作用": "释放指定气体",
+    }
+  },
+
+  "仓库": {
+    "主钥匙串": {
+      "数量": 1,
+      "作用": "打开公寓任意房间门锁"
     },
-    // === 401/402/403 ===
-    "wang_yan": {
-      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
-      "name": "王艳",
-      "room": "401", // 主卧
-      "is_home": true,
-      "state": "watching_tv",
-      "params": {
-        "consciousness": 100,
-        "body_sensitivity": 10, 
-        "trust": 20,
-        "alertness": 0,
-        "depravity": 20,
-        "li_qiang_alertness": 0 // [特殊] 丈夫李强的怀疑度
-      },
-      "flags": { "$meta": { "extensible": true } }
+    "镇静药片": {
+      "数量": 5,
+      "作用": "磨碎后可溶于饮料，降低意识值"
     },
-    // === 401/402/403 ===
-    "li_wenjing": {
-      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
-      "name": "李文静",
-      "room": "402", // 次卧
-      "is_home": false, // 还在上晚自习
-      "state": "studying",
-      "params": {
-        "consciousness": 100,
-        "body_sensitivity": 0, 
-        "trust": 10,
-        "alertness": 0,
-        "depravity": 0
-      },
-      "flags": { "$meta": { "extensible": true } }
-    },
-    // === 401/402/403 ===
-    "li_sisi": {
-      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
-      "name": "李思思",
-      "room": "403", // 儿童房
-      "is_home": true,
-      "state": "playing",
-      "params": {
-        "consciousness": 100,
-        "body_sensitivity": 0, 
-        "trust": 60,
-        "alertness": 0,
-        "depravity": 0
-      },
-      "flags": { "$meta": { "extensible": true } }
+    "安眠喷雾": {
+      "数量": 2,
+      "作用": "对指定目标喷洒使其昏睡"
     }
   }
 }

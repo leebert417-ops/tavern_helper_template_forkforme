@@ -1,0 +1,24 @@
+/* src/窥视者日常/style.scss */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Consolas', monospace; // 确保使用终端风格字体
+  color: #00ff00; // 默认文本颜色
+  background-color: #0a0a0a; // 背景色
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#peep-app {
+  // 确保应用容器宽度自适应，不产生横向滚动条
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// 通用按钮样式（如果有全局按钮）
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}

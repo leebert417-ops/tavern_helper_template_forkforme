@@ -1,0 +1,151 @@
+{
+  "world": {
+    "$meta": {
+      "extensible": false,
+      "required": ["day", "time", "weekday", "weather"]
+    },
+    "day": 1,
+    "time": "19:00",
+    "weekday": "周五",
+    "weather": "阴"
+  },
+
+  "player": {
+    "$meta": {
+      "extensible": false,
+      "required": ["money", "energy", "location", "mode"]
+    },
+    "money": 5000,
+    "energy": 100,
+    "location": "203", 
+    "mode": "monitor"
+  },
+  
+  "inventory": {
+    "$meta": {
+      "extensible": false,
+      "required": ["items", "cameras"]
+    },
+    "items": [
+      "$__META_EXTENSIBLE__$",
+      "master_key_set", 
+      "smartphone"
+    ],
+    "cameras": {
+       "$meta": {
+        "extensible": true,
+        "template": {
+           "type": "basic",
+           "status": "online"
+        }
+      },
+      "201": { "type": "pinhole_basic", "status": "online" },
+      "走廊": { "type": "cctv", "status": "online" }
+      "洗衣房": { "type": "cctv", "status": "online" }
+    }
+  },
+
+  "tenants": {
+    "$meta": {
+      "extensible": false,
+      "required": ["lin_xiaolu", "chen_mi", "chen_tang", "wang_yan", "li_wenjing", "li_sisi"]
+    },
+    // === 201 ===
+    "lin_xiaolu": {
+      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
+      "name": "林小鹿",
+      "room": "201",
+      "is_home": true,
+      "state": "writing_code",
+      "params": {
+        "consciousness": 100,
+        "body_sensitivity": 0,
+        "trust": 50,
+        "alertness": 0,
+        "depravity": 0
+      },
+      "flags": { "$meta": { "extensible": true, "template": true } }
+    },
+    // === 301 ===
+    "chen_mi": {
+      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
+      "name": "陈蜜",
+      "room": "301", // 姐姐房间
+      "is_home": true,
+      "state": "cooking",
+      "params": {
+        "consciousness": 100,
+        "body_sensitivity": 0,
+        "trust": 40,
+        "alertness": 5,
+        "depravity": 5
+      },
+      "flags": { "$meta": { "extensible": true } }
+    },
+    // === 301 ===
+    "chen_tang": {
+      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
+      "name": "陈糖",
+      "room": "302", // 妹妹房间/直播间
+      "is_home": true,
+      "state": "streaming",
+      "params": {
+        "consciousness": 100,
+        "body_sensitivity": 0,
+        "trust": 30,
+        "alertness": 0,
+        "depravity": 10
+      },
+      "flags": { "$meta": { "extensible": true } }
+    },
+    // === 401/402/403 ===
+    "wang_yan": {
+      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
+      "name": "王艳",
+      "room": "401", // 主卧
+      "is_home": true,
+      "state": "watching_tv",
+      "params": {
+        "consciousness": 100,
+        "body_sensitivity": 10, 
+        "trust": 20,
+        "alertness": 0,
+        "depravity": 20,
+        "li_qiang_alertness": 0 // [特殊] 丈夫李强的怀疑度
+      },
+      "flags": { "$meta": { "extensible": true } }
+    },
+    // === 401/402/403 ===
+    "li_wenjing": {
+      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
+      "name": "李文静",
+      "room": "402", // 次卧
+      "is_home": false, // 还在上晚自习
+      "state": "studying",
+      "params": {
+        "consciousness": 100,
+        "body_sensitivity": 0, 
+        "trust": 10,
+        "alertness": 0,
+        "depravity": 0
+      },
+      "flags": { "$meta": { "extensible": true } }
+    },
+    // === 401/402/403 ===
+    "li_sisi": {
+      "$meta": { "extensible": false, "required": ["name", "room", "is_home", "state", "params"] },
+      "name": "李思思",
+      "room": "403", // 儿童房
+      "is_home": true,
+      "state": "playing",
+      "params": {
+        "consciousness": 100,
+        "body_sensitivity": 0, 
+        "trust": 60,
+        "alertness": 0,
+        "depravity": 0
+      },
+      "flags": { "$meta": { "extensible": true } }
+    }
+  }
+}

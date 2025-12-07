@@ -1,0 +1,42 @@
+---
+<status_current_variables>
+{{get_message_variable::stat_data}}
+</status_current_variables>
+rule:
+  - You should output the update analysis in the end of the next reply.
+  - Use `_.set('path', 'old', 'new')` for direct assignment or state changes.
+  - Use `_.add('path', value)` to add or subtract a numerical value.
+  - Use `_.insert('path', 'item_or_key', 'value')` to add an element to an array or object.
+  - Use `_.remove('path', 'item_or_key')` to remove an element from an array or object.
+  - **CRITICAL**: Update `consciousness` (意识) based on drug effects or sleep. When < 30, target is unconscious.
+  - **CRITICAL**: Update `alertness` (警惕) if player leaves traces or makes noise.
+  - **CRITICAL**: Update `body_sensitivity` (开发度) after secret sexual interactions.
+  - **CRITICAL**: For Wang Yan, update `li_qiang_alertness` if Li Qiang notices something wrong.
+  - When using _.set with objects or arrays, do NOT wrap them in quotes - use direct object/array literals (e.g., {key: value} or [item1, item2])
+  - When using _.set with strings, DO wrap them in quotes (e.g., 'string value')
+  - When using _.set with numbers or booleans, do NOT use quotes (e.g., 42, true, false)
+format: |-
+  <UpdateVariable>
+    <Analysis>
+      ${variable_path}: ${Whether the variable should be updated: 'Yes' or 'No'}
+      ...
+    </Analysis>
+    ${command_expression}; // ${brief reason for change}
+    ...
+  </UpdateVariable>
+example: |-
+  <UpdateVariable>
+    <Analysis>
+      world.time: Yes
+      player.location: Yes
+      tenants.lin_xiaolu.params.alertness: Yes
+      tenants.lin_xiaolu.flags: Yes
+      tenants.wang_yan.params.li_qiang_alertness: Yes
+      inventory.items: No
+    </Analysis>
+    _.set('world.time', '23:00', '23:15'); // 潜入行动耗时
+    _.set('player.location', '203', '201'); // 使用备用钥匙进入201
+    _.add('tenants.lin_xiaolu.params.alertness', 10); // 进门时发出了轻微声响
+    _.insert('tenants.lin_xiaolu.flags', 'restless_sleep', true); // 她似乎睡得不安稳
+    _.add('tenants.wang_yan.params.li_qiang_alertness', 5); // 李强觉得家里有点不对劲
+  </UpdateVariable>

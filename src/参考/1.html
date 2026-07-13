@@ -1,0 +1,1248 @@
+```
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>诊所</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css        ">
+    <style>
+        :root {
+            --medical-pink: #fbcfe8;
+            --medical-light-pink: #fce7f3;
+            --medical-dark-pink: #db2777;
+            --medical-purple: #c084fc;
+            --medical-red: #f87171;
+            --medical-orange: #fb923c;
+            --medical-gray: #9ca3af;
+            --bg-primary: #f9fafb;
+            --bg-secondary: #fef2f7;
+            --bg-card: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(219, 39, 119, 0.1);
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --shadow: 0 8px 32px rgba(219, 39, 119, 0.08);
+            --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: transparent;
+            color: var(--text-primary);
+            min-height: 0vh;
+            height: auto;
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        .medical-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .medical-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--medical-pink), #fce7f3);
+            color: var(--medical-dark-pink);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .medical-header:hover {
+            background: linear-gradient(135deg, #fce7f3, var(--medical-pink));
+        }
+
+        .medical-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .medical-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(219, 39, 119, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        .collapse-btn {
+            background: rgba(219, 39, 119, 0.1);
+            border: none;
+            color: var(--medical-dark-pink);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .collapse-btn:hover {
+            background: rgba(219, 39, 119, 0.2);
+            transform: rotate(180deg);
+        }
+
+        .medical-nav {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-item {
+            padding: 16px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-item:hover {
+            background: rgba(251, 206, 232, 0.2);
+            color: var(--medical-dark-pink);
+            transform: translateY(-2px);
+        }
+
+        .nav-item.active {
+            background: var(--medical-pink);
+            color: var(--medical-dark-pink);
+            box-shadow: 0 4px 12px rgba(251, 206, 232, 0.3);
+        }
+
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--medical-pink);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .nav-item.active::after {
+            opacity: 1;
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .live-icon { background: var(--medical-red); }
+        .patient-icon { background: var(--medical-pink); }
+        .treatment-icon { background: var(--medical-purple); }
+        .condition-icon { background: var(--medical-orange); }
+        .wardrobe-icon { background: var(--medical-dark-pink); }
+        .task-icon { background: var(--medical-gray); }
+
+        .medical-content {
+            display: none;
+            padding: 24px;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .medical-content.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-card {
+            background: var(--bg-card);
+            border: 1px solid solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .info-card.card-collapsed .card-content {
+            max-height: 0;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--medical-pink), var(--medical-light-pink));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .info-card:hover::before {
+            opacity: 1;
+        }
+
+        .info-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--medical-dark-pink);
+        }
+
+        .card-header-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--medical-pink);
+            color: var(--medical-dark-pink);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .card-toggle {
+            background: var(--bg-secondary);
+            border: none;
+            color: var(--text-secondary);
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .card-toggle:hover {
+            background: var(--medical-pink);
+            color: var(--medical-dark-pink);
+        }
+
+        .card-content {
+            transition: var(--transition);
+        }
+
+        .card-collapsed .card-content {
+            max-height: 0;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            gap: 12px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+.info-value {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 14px;
+    /* 移除max-width限制，让文本自然展开 */
+    min-width: 100px; /* 确保窄文本有基础宽度，避免排版排版错乱 */
+    word-wrap: break-word; /* 仅在文本过长时自动换行 */
+    text-align: right; /* 左对齐更更符合医疗场景阅读习惯 */
+    line-height: 1.4;
+}
+
+        .danmaku-container {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .danmaku-item {
+            background: var(--bg-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            display: inline-block;
+            max-width: 100%;
+            word-wrap: break-word;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .wardrobe-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+        }
+
+        .wardrobe-item {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .wardrobe-item:hover {
+            border-color: var(--medical-pink);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(251, 206, 232, 0.2);
+        }
+
+        .wardrobe-item:active {
+            transform: translateY(0);
+        }
+
+        .collapsed .medical-content,
+        .collapsed .medical-nav {
+            display: none;
+        }
+
+        .collapsed {
+            max-height: 80px;
+        }
+
+        .progress-container {
+            margin: 16px 0;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .progress-title {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .progress-value {
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-pink { background: linear-gradient(90deg, var(--medical-pink), var(--medical-light-pink)); }
+        .progress-green { background: linear-gradient(90deg, #4ade80, #86efac); }
+        .progress-red { background: linear-gradient(90deg, var(--medical-red), #fca5a5); }
+        .progress-orange { background: linear-gradient(90deg, var(--medical-orange), #fdba74); }
+
+        @media (max-width: 768px) {
+            .medical-nav {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .nav-item {
+                padding: 12px 8px;
+                font-size: 12px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .medical-content {
+                padding: 16px;
+            }
+            
+            .wardrobe-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <div class="medical-container" id="medical-app">
+        <div class="medical-header" onclick="toggleCollapse()">
+            <div class="medical-title">
+                <div class="medical-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <span>状态栏</span>
+            </div>
+            <button class="collapse-btn" id="collapse-btn">
+                <i class="fas fa-chevron-up"></i>
+            </button>
+        </div>
+
+        <div class="medical-nav">
+            <div class="nav-item active" onclick="switchTab('live', event)">
+                <div class="nav-icon live-icon">📺</div>
+                <div>直播间</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('patient', event)">
+                <div class="nav-icon patient-icon">👤</div>
+                <div>个人信息</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('treatment', event)">
+                <div class="nav-icon treatment-icon">📊</div>
+                <div>平台信息</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('condition', event)">
+                <div class="nav-icon condition-icon">🔞</div>
+                <div>身体信息</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('wardrobe', event)">
+                <div class="nav-icon wardrobe-icon">👕</div>
+                <div>服装道具</div>
+            </div>
+            <div class="nav-item" onclick="switchTab('task', event)">
+                <div class="nav-icon task-icon">📋</div>
+                <div>委托信息</div>
+            </div>
+        </div>
+
+        <!-- 直播间 -->
+        <div class="medical-content active" id="live-content">
+            <div class="info-card card-collapsed" id="live-environment-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">📺</div>
+                        <span>世界信息</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('live-environment-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">日期</div>
+                        <div class="info-value" id="live-date"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">时间</div>
+                        <div class="info-value" id="live-time"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">天气</div>
+                        <div class="info-value" id="live-weather"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">地点</div>
+                        <div class="info-value" id="live-location"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">周围情况</div>
+                        <div class="info-value" id="live-environment"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card card-collapsed" id="danmaku-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">💬</div>
+                        <span>直播信息</span>
+                        <span class="ml-4 px-4 py-2 bg-pink-500 text-white text-sm font-medium rounded-full flex items-center" id="live-platform">
+                            <i class="fas fa-tv mr-1"></i>
+                            <span id="live-platform-text">未知平台</span>
+                        </span>
+                        <span class="ml-2 px-3 py-1 bg-pink-400 text-white text-sm font-medium rounded-full flex items-center" id="viewer-count">
+                            <i class="fas fa-users mr-1"></i>
+                            <span id="viewer-count-text">0</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="danmaku-container" id="danmaku-container">
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 个人信息 -->
+        <div class="medical-content" id="patient-content">
+            <div class="info-card card-collapsed" id="clothing-info-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">👕</div>
+                        <span>服装信息</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('clothing-info-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">上半身服装</div>
+                        <div class="info-value" id="patient-upper-wear"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">下半身服装</div>
+                        <div class="info-value" id="patient-lower-wear"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">内裤胸罩</div>
+                        <div class="info-value" id="patient-underwear"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">袜子鞋子</div>
+                        <div class="info-value" id="patient-footwear"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="info-card card-collapsed" id="basic-info-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">👤</div>
+                        <span>基本信息</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('basic-info-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">当前姿势</div>
+                        <div class="info-value" id="patient-level"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">当前行为</div>
+                        <div class="info-value" id="patient-name"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">当前道具</div>
+                        <div class="info-value" id="patient-age"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">行动计划</div>
+                        <div class="info-value" id="patient-body-type"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">直播企划</div>
+                        <div class="info-value" id="patient-family"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">通用货币</div>
+                        <div class="info-value" id="patient-features"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 平台信息 -->
+        <div class="medical-content" id="treatment-content">
+            <div class="info-card card-collapsed" id="treatment-plan-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon"><svg t="1762161085605" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6195" width="32" height="32"><path d="M1021.72444445 836.54883555V187.48757333C1021.72444445 85.61550222 938.38449778 2.27555555 836.51242667 2.27555555H187.48757333C85.61550222 2.27555555 2.27555555 85.61550222 2.27555555 187.48757333v649.06126222c0 100.85262222 81.70154667 183.57361778 182.2264889 185.1756089h654.9959111c100.48853333-1.60199111 182.22648889-84.28657778 182.2264889-185.1756089" fill="#FF2442" p-id="6196"></path><path d="M726.52117333 366.36444445h57.344v20.53461333c0 1.6384 0.80099555 2.40298667 2.36657778 2.36657777 34.00590222-1.01944889 68.26666667 0.07281778 85.81575111 34.95253334 10.44935111 20.68024889 8.30122667 52.13752889 7.71868445 76.82275556-0.03640889 1.45635555 0.65536 2.25735111 2.03889778 2.40298666 4.00497778 0.36408889 7.90072889 0.72817778 11.68725333 1.20149334 67.61130667 8.11918222 54.24924445 71.87114667 54.46769777 121.96977777 0.10922667 17.47626667-1.85685333 30.25578667-5.82542222 38.41137778-8.37404445 16.89372445-23.37450667 26.57848889-45.00138666 28.98147555H854.97173333l-21.55406222-50.02581333a1.6384 1.6384 0 0 1 0.10922667-1.52917333 1.56558222 1.56558222 0 0 1 1.31072-0.72817778l45.72956444-0.03640889c2.54862222 0 4.95160889-1.09226667 6.69923556-2.98552889a10.12167111 10.12167111 0 0 0 2.69425777-7.02691555c-0.21845333-15.29173333-0.32768-30.54705778-0.25486222-45.80238223 0-13.72615111-6.48078222-20.75306667-19.55157333-21.11715555-14.78200889-0.36408889-42.78044445-0.36408889-84.03171555 0.07281778-1.45635555 0-2.18453333 0.80099555-2.18453334 2.36657777l-0.21845333 126.81216H726.44835555l-0.18204444-127.35829333a2.25735111 2.25735111 0 0 0-2.22094222-2.33016889h-53.52106667a2.54862222 2.54862222 0 0 1-2.47580444-2.54862222l0.07281777-55.41432889c0-1.85685333 0.87381333-2.80348445 2.62144-2.80348444l52.90211556 0.10922667a2.51221333 2.51221333 0 0 0 1.82044444-0.80099556 2.76707555 2.76707555 0 0 0 0.72817778-1.89326222v-47.91409778a3.16757333 3.16757333 0 0 0-3.05834666-3.24039111l-32.65877334 0.14563555c-1.71121778 0-2.54862222-0.91022222-2.54862222-2.69425778l-0.10922666-55.7056c0-1.6384 0.72817778-2.43939555 2.36657777-2.43939555h33.82385778c1.45635555 0 2.18453333-0.72817778 2.18453333-2.29376l0.36408889-20.46179555z m59.38289778 137.37073777l35.57148444-0.07281777c0.58254222 0 1.12867555-0.25486222 1.52917334-0.6917689a2.29376 2.29376 0 0 0 0.61895111-1.6019911l-0.18204445-44.52807112c0-3.49525333-2.54862222-6.33514667-5.64337777-6.33514666l-28.54456889 0.07281778a5.35210667 5.35210667 0 0 0-4.00497778 1.89326222 6.80846222 6.80846222 0 0 0-1.6384 4.55111111l0.18204444 44.52807111c0 1.23790222 0.98304 2.18453333 2.11171556 2.18453333zM417.95584 507.74016c-13.83537778 0.25486222-38.84828445 4.11420445-44.30961778-13.68974222-3.31320889-10.63139555 4.18702222-25.44981333 8.73813333-35.82634667 12.96156445-29.52760889 25.66826667-59.16444445 38.15651556-88.91050666 0.50972445-1.20149333 1.38353778-1.82044445 2.62144-1.82044445h54.72256c0.47331555 0 0.87381333 0.25486222 1.09226667 0.65536a1.45635555 1.45635555 0 0 1 0.14563555 1.31072l-31.67573333 74.01927111c-0.72817778 1.71121778-0.54613333 3.64088889 0.40049778 5.24288a5.17006222 5.17006222 0 0 0 4.36906667 2.47580444h46.89464888c0.58254222 0 1.09226667 0.29127111 1.41994667 0.76458667 0.29127111 0.50972445 0.36408889 1.09226667 0.10922667 1.6384-13.54410667 31.56650667-27.05180445 62.91456-40.52309334 94.04416-1.34712889 3.09475555-1.92967111 5.38851555-1.71121778 6.84487111 0.47331555 3.16757333 2.25735111 4.76956445 5.31569778 4.80597334l29.67324445 0.18204444c1.71121778 0.03640889 2.25735111 0.87381333 1.56558222 2.54862222l-19.18748445 45.14702222a3.78652445 3.78652445 0 0 1-3.64088888 2.51221334c-30.14656 0.36408889-51.22730667 0.36408889-63.24224-0.18204444-19.87925333-0.91022222-24.75804445-18.31367111-17.03936-36.26325334l27.27025778-63.64273778a1.38353778 1.38353778 0 0 0-0.10922667-1.23790222 1.23790222 1.23790222 0 0 0-1.09226667-0.61895111zM190.58232889 694.00803555h-21.48124444l-21.04433778-49.40686222a1.60199111 1.60199111 0 0 1 0.10922666-1.49276444 1.45635555 1.45635555 0 0 1 1.23790222-0.72817778l29.70965334-0.07281778a6.95409778 6.95409778 0 0 0 6.80846222-7.09973333l0.80099556-262.03477333a2.54862222 2.54862222 0 0 1 2.51221333-2.62144h51.11808c2.40298667 0 3.60448 1.27431111 3.64088889 3.78652444 0.21845333 88.72846222 0.21845333 175.92775111 0 261.63427556-0.14563555 35.17098667-16.45681778 59.20085333-53.41184 58.03576888z" fill="#FFFFFF" p-id="6197"></path><path d="M670.08739555 694.00803555h-193.91374222l25.99594667-58.6183111a3.45884445 3.45884445 0 0 1 3.38602667-2.22094223l47.47719111 0.07281778c1.67480889 0 2.54862222-0.83740445 2.54862222-2.54862222v-177.85742223c0-1.52917333-0.72817778-2.29376-2.18453333-2.29376l-31.49368889-0.03640888c-1.41994667 0-2.54862222-1.23790222-2.54862223-2.73066667v-57.05272889c0-0.87381333 0.65536-1.60199111 1.49276445-1.60199111h128.37774222c1.60199111 0 2.36657778 0.83740445 2.36657778 2.51221333l0.07281778 56.43377778c0 1.6384-0.80099555 2.47580445-2.40298667 2.47580444h-31.74855111c-1.45635555 0-2.18453333 0.76458667-2.18453333 2.29376v177.74819556c0 1.71121778 0.83740445 2.54862222 2.43939555 2.54862222l50.31708445 0.10922667c1.38353778 0 2.07530667 0.72817778 2.07530666 2.18453333L670.08739555 694.04444445zM901.02897778 394.65415111c39.61287111-27.23384889 67.50208 42.19790222 24.10268444 54.10360889-7.06332445 1.96608-18.31367111 2.07530667-33.71463111 0.36408889-1.38353778-0.14563555-2.03889778-0.91022222-2.03889778-2.36657778-0.21845333-16.384-3.45884445-41.72458667 11.65084445-52.06471111zM354.20387555 598.79879111l-26.2144 61.05770667c-2.36657778 5.46133333-4.95160889 5.57056-7.8279111 0.43690667-19.29671111-34.87971555-25.85031111-63.35146667-29.63683556-106.71445334-2.91271111-33.67822222-5.42492445-67.35644445-7.60945778-101.10748444-0.07281778-1.52917333 0.61895111-2.29376 2.07530667-2.29376l53.12056889 0.03640888c1.49276445 0 2.33016889 0.80099555 2.43939555 2.3301689 2.73066667 39.24878222 5.60696889 78.38833778 8.59249778 117.41866666 0.76458667 10.04885333 2.47580445 18.38648889 5.09724445 25.01290667a4.73315555 4.73315555 0 0 1-0.0364089 3.82293333zM75.09333333 596.54144v-2.51221333a25.70467555 25.70467555 0 0 0 4.73315556-11.50520889c3.93216-43.32657778 7.13614222-86.61674667 9.64835556-129.94332445 0.10922667-1.34712889 0.76458667-2.03889778 2.03889777-2.03889778h54.24924445c0.47331555 0 0.94663111 0.21845333 1.31072 0.61895112 0.32768 0.36408889 0.50972445 0.87381333 0.47331555 1.38353778a7226.07217778 7226.07217778 0 0 1-9.57553777 119.67601777c-2.54862222 28.94506667-11.79648 67.68412445-31.1296 91.16785778-1.23790222 1.49276445-2.29376 1.34712889-3.09475556-0.47331555L75.09333333 596.54144zM445.08046222 694.00803555h-78.57038222l-10.01244445-3.96856888c-1.41994667-0.54613333-1.82044445-1.52917333-1.16508444-2.94912l24.64881778-56.43377778c0.72817778-1.6384 1.89326222-2.25735111 3.56807111-1.82044444 26.94257778 7.31818667 58.14499555 4.29624889 85.70652445 4.40547555 1.71121778 0.03640889 2.18453333 0.87381333 1.45635555 2.47580445l-25.63185778 58.25422222z" fill="#FFFFFF" p-id="6198"></path></svg></div>
+                        <span>小红书</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('treatment-plan-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">运营情况</div>
+                        <div class="info-value" id="xiaohongshu-status"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台粉丝</div>
+                        <div class="info-value" id="xiaohongshu-followers"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">最新动态</div>
+                        <div class="info-value" id="xiaohongshu-latest"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台风评</div>
+                        <div class="info-value" id="xiaohongshu-reputation"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="info-card card-collapsed" id="treatment-progress-card-1">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon"><svg t="1762161107820" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7261" width="32" height="32"><path d="M0 0m184.32 0l655.36 0q184.32 0 184.32 184.32l0 655.36q0 184.32-184.32 184.32l-655.36 0q-184.32 0-184.32-184.32l0-655.36q0-184.32 184.32-184.32Z" fill="#EC5D85" p-id="7262"></path><path d="M512 241.96096h52.224l65.06496-96.31744c49.63328-50.31936 89.64096 0.43008 63.85664 45.71136l-34.31424 51.5072c257.64864 5.02784 257.64864 43.008 257.64864 325.03808 0 325.94944 0 336.46592-404.48 336.46592S107.52 893.8496 107.52 567.90016c0-277.69856 0-318.80192 253.14304-324.95616l-39.43424-58.368c-31.26272-54.90688 37.33504-90.40896 64.68608-42.37312l60.416 99.80928c18.18624-0.0512 41.18528-0.0512 65.66912-0.0512z" fill="#EF85A7" p-id="7263"></path><path d="M512 338.5856c332.8 0 332.8 0 332.8 240.64s0 248.39168-332.8 248.39168-332.8-7.75168-332.8-248.39168 0-240.64 332.8-240.64z" fill="#EC5D85" p-id="7264"></path><path d="M281.6 558.08a30.72 30.72 0 0 1-27.47392-16.97792 30.72 30.72 0 0 1 13.73184-41.216l122.88-61.44a30.72 30.72 0 0 1 41.216 13.74208 30.72 30.72 0 0 1-13.74208 41.216l-122.88 61.44a30.59712 30.59712 0 0 1-13.73184 3.23584zM752.64 558.08a30.60736 30.60736 0 0 1-12.8512-2.83648l-133.12-61.44a30.72 30.72 0 0 1-15.04256-40.7552 30.72 30.72 0 0 1 40.76544-15.02208l133.12 61.44A30.72 30.72 0 0 1 752.64 558.08zM454.656 666.88a15.36 15.36 0 0 1-12.288-6.1952 15.36 15.36 0 0 1 3.072-21.49376l68.5056-50.91328 50.35008 52.62336a15.36 15.36 0 0 1-22.20032 21.23776l-31.5904-33.024-46.71488 34.72384a15.28832 15.28832 0 0 1-9.13408 3.04128z" fill="#EF85A7" p-id="7265"></path><path d="M65.536 369.31584c15.03232 101.90848 32.84992 147.17952 44.544 355.328 14.63296 2.18112 177.70496 10.04544 204.05248-74.62912a16.14848 16.14848 0 0 0 1.64864-10.87488c-30.60736-80.3328-169.216-60.416-169.216-60.416s-10.36288-146.50368-11.49952-238.83776zM362.25024 383.03744l34.816 303.17568h34.64192L405.23776 381.1328zM309.52448 536.28928h45.48608l16.09728 158.6176-31.82592 1.85344zM446.86336 542.98624h45.80352V705.3312h-33.87392zM296.6016 457.97376h21.39136l5.2736 58.99264-18.91328 2.26304zM326.99392 457.97376h21.39136l2.53952 55.808-17.408 1.61792zM470.62016 459.88864h19.456v62.27968h-19.456zM440.23808 459.88864h22.20032v62.27968h-16.62976z" fill="#FFFFFF" p-id="7266"></path><path d="M243.56864 645.51936a275.456 275.456 0 0 1-28.4672 23.74656 242.688 242.688 0 0 1-29.53216 17.52064 2.70336 2.70336 0 0 1-4.4032-1.95584 258.60096 258.60096 0 0 1-5.12-29.57312c-1.41312-12.1856-1.95584-25.68192-2.16064-36.36224 0-0.3072 0-2.5088 3.01056-1.90464a245.92384 245.92384 0 0 1 34.22208 9.5744 257.024 257.024 0 0 1 32.3584 15.17568c0.52224 0.256 2.51904 1.4848 0.09216 3.77856z" fill="#EB5480" p-id="7267"></path><path d="M513.29024 369.31584c15.03232 101.90848 32.84992 147.17952 44.544 355.328 14.63296 2.18112 177.70496 10.04544 204.05248-74.62912a16.14848 16.14848 0 0 0 1.64864-10.87488c-30.60736-80.3328-169.216-60.416-169.216-60.416s-10.36288-146.50368-11.49952-238.83776zM810.00448 383.03744l34.816 303.17568h34.64192L852.992 381.1328zM757.27872 536.28928h45.48608l16.09728 158.6176-31.82592 1.85344zM894.6176 542.98624h45.80352V705.3312H906.5472zM744.35584 457.97376h21.39136l5.2736 58.99264-18.91328 2.26304zM774.74816 457.97376h21.39136l2.53952 55.808-17.408 1.61792zM918.3744 459.88864h19.456v62.27968h-19.456zM887.99232 459.88864h22.20032v62.27968h-16.62976z" fill="#FFFFFF" p-id="7268"></path><path d="M691.32288 645.51936a275.456 275.456 0 0 1-28.4672 23.74656 242.688 242.688 0 0 1-29.53216 17.52064 2.70336 2.70336 0 0 1-4.4032-1.95584 258.60096 258.60096 0 0 1-5.12-29.57312c-1.41312-12.1856-1.95584-25.68192-2.16064-36.36224 0-0.3072 0-2.5088 3.01056-1.90464a245.92384 245.92384 0 0 1 34.22208 9.5744 257.024 257.024 0 0 1 32.3584 15.17568c0.52224 0.256 2.51904 1.4848 0.09216 3.77856z" fill="#EB5480" p-id="7269"></path></svg></div>
+                        <span>哔哩哔哩</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('treatment-progress-card-1')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">运营情况</div>
+                        <div class="info-value" id="bilibili-status"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台粉丝</div>
+                        <div class="info-value" id="bilibili-followers"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">最近动态</div>
+                        <div class="info-value" id="bilibili-latest"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台风评</div>
+                        <div class="info-value" id="bilibili-reputation"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card card-collapsed" id="treatment-progress-card-2">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon"><svg t="1762161127361" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8320" width="32" height="32"><path d="M0 0m184.32 0l655.36 0q184.32 0 184.32 184.32l0 655.36q0 184.32-184.32 184.32l-655.36 0q-184.32 0-184.32-184.32l0-655.36q0-184.32 184.32-184.32Z" fill="#111111" p-id="8321"></path><path d="M204.27776 670.59712a246.25152 246.25152 0 0 1 245.97504-245.97504v147.57888a98.49856 98.49856 0 0 0-98.38592 98.38592c0 48.34304 26.14272 100.352 83.54816 100.352 3.81952 0 93.55264-0.88064 93.55264-77.19936V134.35904h157.26592a133.31456 133.31456 0 0 0 133.12 132.99712l-0.13312 147.31264a273.152 273.152 0 0 1-142.62272-38.912l-0.06144 317.98272c0 146.00192-124.24192 224.77824-241.14176 224.77824-131.74784 0.03072-231.1168-106.56768-231.1168-247.92064z" fill="#FF4040" p-id="8322"></path><path d="M164.92544 631.23456a246.25152 246.25152 0 0 1 245.97504-245.97504v147.57888a98.49856 98.49856 0 0 0-98.38592 98.38592c0 48.34304 26.14272 100.352 83.54816 100.352 3.81952 0 93.55264-0.88064 93.55264-77.19936V94.99648h157.26592a133.31456 133.31456 0 0 0 133.12 132.99712l-0.13312 147.31264a273.152 273.152 0 0 1-142.62272-38.912l-0.06144 317.98272c0 146.00192-124.24192 224.77824-241.14176 224.77824-131.74784 0.03072-231.1168-106.56768-231.1168-247.92064z" fill="#00F5FF" p-id="8323"></path><path d="M410.91072 427.58144c-158.8224 20.15232-284.44672 222.72-154.112 405.00224 120.40192 98.47808 373.68832 41.20576 380.70272-171.85792l-0.17408-324.1472a280.7296 280.7296 0 0 0 142.88896 38.62528V261.2224a144.98816 144.98816 0 0 1-72.8064-54.82496 135.23968 135.23968 0 0 1-54.70208-72.45824h-123.66848l-0.08192 561.41824c-0.11264 78.46912-130.9696 106.41408-164.18816 30.2592-83.18976-39.77216-64.37888-190.9248 46.31552-192.57344z" fill="#FFFFFF" p-id="8324"></path></svg></div>
+                        <span>抖音</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('treatment-progress-card-2')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">运营情况</div>
+                        <div class="info-value" id="douyin-status"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台粉丝</div>
+                        <div class="info-value" id="douyin-followers"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">最近动态</div>
+                        <div class="info-value" id="douyin-latest"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台风评</div>
+                        <div class="info-value" id="douyin-reputation"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card card-collapsed" id="treatment-tracking-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon"><svg t="1762161171032" class="icon" viewBox="0 0 2453 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="11937" width="32" height="32"><path d="M2437.368875 220.776166s-14.450804-100.352803-58.204626-144.508036C2323.769502 18.464916 2261.149353 18.063505 2232.649157 14.852215 2028.330851 0 1721.652685 0 1721.652685 0h-0.802822s-306.678165 0-511.397883 14.852215c-28.500196 3.21129-90.718934 3.612701-146.515093 61.817326-43.753822 44.155233-58.204626 144.508036-58.204625 144.508036s-14.450804 117.613485-14.450804 235.628381v110.388084c0 117.613485 14.450804 235.628381 14.450804 235.628381s14.450804 100.352803 58.204625 144.508036c55.394747 57.803214 128.451588 56.19757 160.965896 62.218737 116.810662 11.239514 496.94708 14.450804 496.94708 14.450804s307.079577-0.401411 511.397883-15.253626c28.500196-3.21129 90.718934-3.612701 146.515092-61.817327 43.753822-44.155233 58.204626-144.508036 58.204626-144.508036s14.450804-117.613485 14.450803-235.628381v-110.388083c0.401411-118.014896-14.049392-235.628381-14.049392-235.628381" fill="#D54029" p-id="11938"></path><path d="M915.217562 828.111329h-93.127401v-53.789102C786.765974 814.864759 757.061544 834.935319 724.547236 834.935319c-28.500196 0-48.570757-13.647981-58.204625-37.732653-6.021168-14.852215-10.436691-38.134065-10.436692-71.852607V333.572717h93.127401V734.582517c2.007056 13.647981 8.028224 18.866327 19.66915 18.866327 17.662093 0 33.718542-15.655037 53.387691-43.352411V333.572717H915.217562v494.538612M587.264602 495.341435c0-52.98628-10.436691-92.324579-29.303018-117.613485-24.887495-33.718542-63.422971-47.767934-102.76127-47.767934-44.155233 0-77.873775 13.647981-102.76127 47.767934-18.866327 24.887495-29.303018 65.028616-29.303019 118.014896v175.81811c0 52.584869 9.232458 88.711878 28.098785 113.599373 24.887495 33.718542 65.028616 51.380635 103.965504 51.380635s79.880831-17.662093 104.768326-51.380635c18.866327-24.887495 27.295962-61.014504 27.295962-113.599373v-176.219521m-93.127401 185.853391c4.816935 48.972168-10.436691 73.05684-39.338299 73.05684-28.901607 0-44.155233-24.084673-39.338298-73.05684v-195.888672c-4.816935-48.972168 10.436691-71.852607 39.338298-71.852606 28.901607 0 44.155233 22.880439 39.338299 71.852606v195.888672zM220.374755 558.764406v269.346923H122.430419v-269.346923S20.873383 228.80439 0 167.388475h102.76127l68.641317 257.705998 68.239906-257.705998h102.76127l-122.029008 391.375931" fill="" p-id="11939"></path><path d="M2329.389259 598.102705v-99.951392c0-52.183457-10.436691-90.317523-28.901607-115.205017-24.887495-33.317131-60.211682-50.979224-104.366915-50.979224-45.359467 0-80.683653 17.662093-105.97256 50.979224-18.866327 24.887495-29.70443 65.028616-29.704429 117.212073v171.402587c0 51.782046 12.042336 88.310466 30.908663 112.796551 25.690318 33.317131 61.014504 50.176401 107.176793 50.176401s82.69071-17.662093 107.176794-52.98628c10.838103-15.655037 17.662093-33.317131 20.873383-52.98628 0.802822-8.831047 3.21129-28.901607 3.211289-57.803214v-14.049392h-93.127401c0 35.725598 0 56.598981-0.802822 61.415915-5.218346 23.683261-17.662093 35.725598-39.73971 35.725598-30.507252 0-43.352411-22.880439-42.951-67.838495V598.102705h176.219522m-176.219522-127.648765c0-45.760878 12.443748-58.204626 42.148178-58.204626 29.303018 0 40.943944 13.647981 40.943943 59.007448v53.387691h-83.092121v-54.190513zM1918.74559 330.762838c-32.514308 0-65.028616 20.070561-93.528812 55.394747V172.20541h-87.909056v655.905919h87.909056V778.73775c29.70443 36.52842 61.817327 55.394747 93.528812 55.394747 35.324187 0 61.014504-18.866327 73.05684-55.394747 6.021168-20.873383 9.633869-52.584869 9.633869-97.944336v-195.888671c0-46.162289-6.021168-77.873775-12.042336-97.542924-11.640925-36.127009-35.324187-56.598981-70.648373-56.598981m-10.03528 355.248922c0 48.972168-11.640925 67.838495-36.929832 67.838495-14.450804 0-31.310074-7.626813-46.162289-22.479028v-296.642885c14.852215-14.450804 31.711486-22.479028 46.162289-22.479028 25.690318 0 36.929831 14.450804 36.929832 63.422971v210.339475zM1663.849471 828.111329h-93.127401v-53.789102C1535.397883 814.864759 1505.693454 834.935319 1473.179145 834.935319c-28.500196 0-48.570757-13.647981-58.204625-37.732653-6.021168-14.852215-10.436691-38.134065-10.436692-71.852607V338.791062h93.127401v396.192866c2.007056 13.647981 8.028224 18.866327 19.66915 18.866327 17.662093 0 33.718542-15.655037 53.387691-43.352411V338.791062h93.127401v489.320267" fill="#FFFFFF" p-id="11940"></path><path d="M1311.410427 828.111329h-97.944335V265.332811h-102.76127V172.20541h308.28381v93.127401h-107.578205v562.778518" fill="#FFFFFF" p-id="11941"></path></svg></div>
+                        <span>YouTube</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('treatment-tracking-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">运营情况</div>
+                        <div class="info-value" id="youtube-status"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台粉丝</div>
+                        <div class="info-value" id="youtube-followers"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">最近动态</div>
+                        <div class="info-value" id="youtube-latest"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台风评</div>
+                        <div class="info-value" id="youtube-reputation"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card card-collapsed" id="treatment-results-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon"><svg t="1762190350228" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15425" width="32" height="32"><path d="M136.533333 0h750.933334c75.093333 0 136.533333 61.44 136.533333 136.533333v750.933334c0 75.093333-61.44 136.533333-136.533333 136.533333H136.533333c-75.093333 0-136.533333-61.44-136.533333-136.533333V136.533333c0-75.093333 61.44-136.533333 136.533333-136.533333z" fill="#1296db" p-id="15426"></path><path d="M747.52 402.773333v-17.066666c23.893333-17.066667 44.373333-40.96 61.44-64.853334-20.48 10.24-44.373333 17.066667-68.266667 20.48 23.893333-13.653333 44.373333-40.96 54.613334-68.266666-23.893333 13.653333-47.786667 23.893333-75.093334 30.72-20.48-23.893333-54.613333-40.96-88.746666-40.96-68.266667 0-119.466667 54.613333-119.466667 126.293333 0 10.24 0 20.48 3.413333 30.72-98.986667-6.826667-187.733333-58.026667-249.173333-136.533333-17.066667 13.653333-23.893333 34.133333-23.893333 58.026666 0 44.373333 20.48 85.333333 54.613333 109.226667-20.48 0-37.546667-6.826667-54.613333-17.066667 0 61.44 40.96 116.053333 95.573333 126.293334-10.24 3.413333-20.48 3.413333-30.72 3.413333-6.826667 0-13.653333 0-23.893333-3.413333 13.653333 51.2 61.44 88.746667 112.64 88.746666-40.96 34.133333-92.16 54.613333-150.186667 54.613334-10.24 0-20.48 0-27.306667-3.413334 54.613333 37.546667 116.053333 58.026667 184.32 58.026667 221.866667 6.826667 344.746667-187.733333 344.746667-354.986667z" fill="#ffffff" p-id="15427"></path></svg></div>
+                        <span>Twitter</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('treatment-results-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">运营情况</div>
+                        <div class="info-value" id="twitter-status"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台粉丝</div>
+                        <div class="info-value" id="twitter-followers"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">最近动态</div>
+                        <div class="info-value" id="twitter-latest"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台风评</div>
+                        <div class="info-value" id="twitter-reputation"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card card-collapsed" id="treatment-report-card-1">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon"><svg t="1762161277779" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="14223" width="32" height="32"><path d="M810.666667 0H213.333333C95.509333 0 0 95.509333 0 213.333333v597.333334c0 117.824 95.509333 213.333333 213.333333 213.333333h597.333334c117.824 0 213.333333-95.509333 213.333333-213.333333V213.333333c0-117.824-95.509333-213.333333-213.333333-213.333333z" fill="#06AEEF" p-id="14224"></path><path d="M441.152 739.818667A206.464 206.464 0 0 0 647.616 533.333333a206.464 206.464 0 0 0-206.464-206.485333A206.464 206.464 0 0 0 234.666667 533.333333a206.464 206.464 0 0 0 206.485333 206.485334z m0-271.744a65.216 65.216 0 1 1 0 130.432 65.216 65.216 0 0 1 0-130.410667z" fill="#CCEFFC" p-id="14225"></path><path d="M548.266667 423.018667l-112.554667 316.8h3.306667c15.872 0 31.722667-1.322667 47.402666-3.925334 6.016-1.002667 11.861333-2.816 17.386667-5.376l42.090667-19.413333a124.8 124.8 0 0 0 35.968-25.088l10.517333-10.517333c11.392-11.392 20.906667-24.533333 28.096-38.933334l10.88-27.157333 6.144-1.856a233.024 233.024 0 0 0 145.984-128.554667l-41.088 3.733334a185.962667 185.962667 0 0 1-37.333333-0.384l-30.250667-3.349334 16.298667-6.4a313.088 313.088 0 0 0 162.986666-145.749333h-169.642666A144.533333 144.533333 0 0 0 548.266667 423.04z" fill="#FFFFFF" p-id="14226"></path></svg></div>
+                        <span>Onlyfans</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('treatment-report-card-1')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">运营情况</div>
+                        <div class="info-value" id="onlyfans-status"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台粉丝</div>
+                        <div class="info-value" id="onlyfans-followers"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">最近动态</div>
+                        <div class="info-value" id="onlyfans-latest"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">平台风评</div>
+                        <div class="info-value" id="onlyfans-reputation"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 身体状况 -->
+        <div class="medical-content" id="condition-content">
+            <div class="info-card card-collapsed" id="body-conditions-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">🔞</div>
+                        <span>身体各部位状况</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('body-conditions-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">奶头情况</div>
+                        <div class="info-value" id="condition-nipple"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">小穴情况</div>
+                        <div class="info-value" id="condition-vagina"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">阴蒂情况</div>
+                        <div class="info-value" id="condition-clitoris"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">尿道情况</div>
+                        <div class="info-value" id="condition-urethra"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">菊穴情况</div>
+                        <div class="info-value" id="condition-anus"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card card-collapsed" id="expansion-record-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">💖</div>
+                        <span>扩张记录</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('expansion-record-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">奶头</div>
+                        <div class="info-value" id="vital-temperature"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">小穴</div>
+                        <div class="info-value" id="vital-pulse"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">尿道</div>
+                        <div class="info-value" id="vital-pressure"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">菊穴</div>
+                        <div class="info-value" id="vital-anus"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 服装衣柜 -->
+        <div class="medical-content" id="wardrobe-content">
+            <div class="info-card card-collapsed" id="wardrobe-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">👕</div>
+                        <span>可选服装</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('wardrobe-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="wardrobe-grid">
+                        <div class="wardrobe-item" onclick="copyToClipboard('白色短袖衬衫系着红色格纹领结，搭配同款红色格纹百褶短裙，穿着黑色过膝袜与棕色圆头皮鞋。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">👕</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">服装1</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">JK制服套装</div>
+                        </div>
+                        <div class="wardrobe-item" onclick="copyToClipboard('粉色短袖束腰连衣裙护士服，胸口有小巧的口袋，搭配白色过膝袜和白色圆头护士鞋。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">👔</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">服装2</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">护士服</div>
+                        </div>
+                        <div class="wardrobe-item" onclick="copyToClipboard('经典的黑白女仆长裙，胸前系着白色荷叶边围裙，头上戴着同款荷叶边发箍，穿着白色过膝袜与黑色玛丽珍鞋。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">🥼</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">服装3</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">女仆装</div>
+                        </div>
+                        <div class="wardrobe-item" onclick="copyToClipboard('侧开叉至大腿根的黑色丝绸短款旗袍，上面绣着金色的凤凰暗纹，搭配肉色连裤丝袜与黑色细高跟鞋。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">🧥</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">服装4</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">旗袍</div>
+                        </div>
+                        <div class="wardrobe-item" onclick="copyToClipboard('黑色长袖连衣裙，领口和袖口是白色蕾丝边，腰间系着巨大的蝴蝶结，穿着黑色蕾丝边过膝袜和厚底玛丽珍鞋。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">👚</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">服装5</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">地雷系</div>
+                        </div>
+                        <div class="wardrobe-item" onclick="copyToClipboard('上身是被称为“白衣”的白色和服，下身是被称为“绯袴”的红色长裙裤，足上穿着白色的足袋与木屐。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">🧣</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">服装6</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">巫女服</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card card-collapsed" id="accessories-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">💍</div>
+                        <span>可选装饰</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('accessories-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="wardrobe-grid">
+                        <div class="wardrobe-item" onclick="copyToClipboard('银色发箍上点缀着小巧的粉色花朵，花朵中心镶嵌着水钻。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">💍</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">装饰1</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">花朵发箍</div>
+                        </div>
+                        <div class="wardrobe-item" onclick="copyToClipboard('珍珠项链搭配小巧的十字架吊坠，珍珠圆润有光泽。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">🔗</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">装饰2</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">珍珠项链</div>
+                        </div>
+                        <div class="wardrobe-item" onclick="copyToClipboard('手腕上戴着多层珍珠手链，每层珍珠大小不一，错落有致。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">📿</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">装饰3</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">珍珠手链</div>
+                        </div>
+                        <div class="wardrobe-item" onclick="copyToClipboard('脚踝上戴着银色脚链，脚链上挂着小小的铃铛，走路时会发出清脆的声响。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">🔔</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">装饰4</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">铃铛脚链</div>
+                        </div>
+                        <div class="wardrobe-item" onclick="copyToClipboard('左耳戴着小巧的珍珠耳钉，右耳戴着银色十字架耳钉，形成不对称的美感。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">💎</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">装饰5</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">珍珠十字架耳钉</div>
+                        </div>
+                        <div class="wardrobe-item" onclick="copyToClipboard('手指上戴着银色戒指，戒指上镶嵌着小小的粉色宝石，闪闪发光。')">
+                            <div style="font-size: 20px; margin-bottom: 6px;">💍</div>
+                            <div style="font-weight: bold; margin-bottom: 2px; font-size: 12px;">装饰6</div>
+                            <div style="font-size: 10px; color: var(--text-secondary);">宝石戒指</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 任务信息 -->
+        <div class="medical-content" id="task-content">
+            <div class="info-card card-collapsed" id="current-task-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">📋</div>
+                        <span>当前委托</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('current-task-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">委托发布者</div>
+                        <div class="info-value" id="task-publisher"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">委托名称</div>
+                        <div class="info-value" id="task-name"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">委托类型</div>
+                        <div class="info-value" id="task-tags"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">委托内容</div>
+                        <div class="info-value" id="task-description"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">委托报酬</div>
+                        <div class="info-value" id="task-reward"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card card-collapsed" id="clinic-info-card">
+                <div class="card-header">
+                    <div class="card-header-content">
+                        <div class="card-icon">⏱️</div>
+                        <span>行程信息</span>
+                    </div>
+                    <button class="card-toggle" onclick="toggleCard('clinic-info-card')">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="info-row">
+                        <div class="info-label">行程名称</div>
+                        <div class="info-value" id="clinic-name"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">行程类型</div>
+                        <div class="info-value" id="clinic-type"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">行程时间</div>
+                        <div class="info-value" id="clinic-time"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">行程内容</div>
+                        <div class="info-value" id="clinic-content"></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">行程报酬</div>
+                        <div class="info-value" id="clinic-reward"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 安全获取对象值的函数
+        function SafeGetValue(obj, path, defaultValue = "N/A") {
+            let keys = Array.isArray(path) ? path : path.split('.');
+            let current = obj;
+            for (let i = 0; i < keys.length; i++) {
+                if (current === undefined || current === null || typeof current !== 'object' || !current.hasOwnProperty(keys[i])) {
+                    return defaultValue;
+                }
+                current = current[keys[i]];
+            }
+            return current === undefined || current === null ? defaultValue : current;
+        }
+
+        // 更新文本值的函数
+        function updateTextValue(elementId, rawValue) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            let displayValue = Array.isArray(rawValue) ? rawValue[0] : rawValue;
+            let valueStr = String(displayValue).replace(/\s*\([^)]*\)$/, '').trim();
+            const parts = valueStr.split('->');
+            element.innerText = parts[parts.length - 1].trim();
+        }
+
+        // 初始化显示函数
+        async function initDisplay() {
+            try {
+                // 获取游戏数据
+                const messages = await getChatMessages(getCurrentMessageId());
+                const gameData = messages?.[0]?.data;
+                const characterData = gameData?.display_data || gameData?.stat_data;
+                
+                if (!characterData) {
+                    console.log('无法加载游戏数据');
+                    return;
+                }
+
+                // 更新直播间
+                updateTextValue('live-date', SafeGetValue(characterData, '直播间.日期'));
+                updateTextValue('live-time', SafeGetValue(characterData, '直播间.时间'));
+                updateTextValue('live-weather', SafeGetValue(characterData, '直播间.天气'));
+                updateTextValue('live-location', SafeGetValue(characterData, '直播间.地点'));
+                updateTextValue('live-environment', SafeGetValue(characterData, '直播间.周围情况'));
+                updateTextValue('live-platform-text', SafeGetValue(characterData, '直播间.直播平台'));
+                updateTextValue('viewer-count-text', SafeGetValue(characterData, '直播间.观看人数'));
+                
+
+                // 更新个人信息
+                updateTextValue('patient-level', SafeGetValue(characterData, '个人信息.当前姿势'));
+                updateTextValue('patient-name', SafeGetValue(characterData, '个人信息.当前行为'));
+                updateTextValue('patient-age', SafeGetValue(characterData, '个人信息.当前道具'));
+                updateTextValue('patient-body-type', SafeGetValue(characterData, '个人信息.行动计划'));
+                updateTextValue('patient-family', SafeGetValue(characterData, '个人信息.直播企划'));
+                updateTextValue('patient-features', SafeGetValue(characterData, '个人信息.通用货币'));
+                updateTextValue('patient-upper-wear', SafeGetValue(characterData, '个人信息.上半身服装'));
+                updateTextValue('patient-lower-wear', SafeGetValue(characterData, '个人信息.下半身服装'));
+                updateTextValue('patient-underwear', SafeGetValue(characterData, '个人信息.内裤胸罩'));
+                updateTextValue('patient-footwear', SafeGetValue(characterData, '个人信息.袜子鞋子'));
+
+                // 更新平台信息 - 哔哩哔哩
+                updateTextValue('bilibili-status', SafeGetValue(characterData, '平台信息.哔哩哔哩.运营情况'));
+                updateTextValue('bilibili-followers', SafeGetValue(characterData, '平台信息.哔哩哔哩.平台粉丝'));
+                updateTextValue('bilibili-latest', SafeGetValue(characterData, '平台信息.哔哩哔哩.最近动态'));
+                updateTextValue('bilibili-reputation', SafeGetValue(characterData, '平台信息.哔哩哔哩.平台风评'));
+                
+                // 更新平台信息 - 小红书
+                updateTextValue('xiaohongshu-status', SafeGetValue(characterData, '平台信息.小红书.运营情况'));
+                updateTextValue('xiaohongshu-followers', SafeGetValue(characterData, '平台信息.小红书.平台粉丝'));
+                updateTextValue('xiaohongshu-latest', SafeGetValue(characterData, '平台信息.小红书.最近动态'));
+                updateTextValue('xiaohongshu-reputation', SafeGetValue(characterData, '平台信息.小红书.平台风评'));
+                
+                // 更新治疗跟踪 - 抖音
+                updateTextValue('douyin-status', SafeGetValue(characterData, '平台信息.抖音.运营情况'));
+                updateTextValue('douyin-followers', SafeGetValue(characterData, '平台信息.抖音.平台粉丝'));
+                updateTextValue('douyin-latest', SafeGetValue(characterData, '平台信息.抖音.最近动态'));
+                updateTextValue('douyin-reputation', SafeGetValue(characterData, '平台信息.抖音.平台风评'));
+                
+                // 更新治疗结果 - YouTube
+                updateTextValue('youtube-status', SafeGetValue(characterData, '平台信息.YouTube.运营情况'));
+                updateTextValue('youtube-followers', SafeGetValue(characterData, '平台信息.YouTube.平台粉丝'));
+                updateTextValue('youtube-latest', SafeGetValue(characterData, '平台信息.YouTube.最近动态'));
+                updateTextValue('youtube-reputation', SafeGetValue(characterData, '平台信息.YouTube.平台风评'));
+                
+                // 更新治疗报告 - Twitter
+                updateTextValue('twitter-status', SafeGetValue(characterData, '平台信息.Twitter.运营情况'));
+                updateTextValue('twitter-followers', SafeGetValue(characterData, '平台信息.Twitter.平台粉丝'));
+                updateTextValue('twitter-latest', SafeGetValue(characterData, '平台信息.Twitter.最近动态'));
+                updateTextValue('twitter-reputation', SafeGetValue(characterData, '平台信息.Twitter.平台风评'));
+                
+                // 更新治疗报告 - Onlyfans
+                updateTextValue('onlyfans-status', SafeGetValue(characterData, '平台信息.Onlyfans.运营情况'));
+                updateTextValue('onlyfans-followers', SafeGetValue(characterData, '平台信息.Onlyfans.平台粉丝'));
+                updateTextValue('onlyfans-latest', SafeGetValue(characterData, '平台信息.Onlyfans.最近动态'));
+                updateTextValue('onlyfans-reputation', SafeGetValue(characterData, '平台信息.Onlyfans.平台风评'));
+
+                // 更新身体状况
+                updateTextValue('condition-nipple', SafeGetValue(characterData, '身体状况.奶头情况'));
+                updateTextValue('condition-vagina', SafeGetValue(characterData, '身体状况.小穴情况'));
+                updateTextValue('condition-clitoris', SafeGetValue(characterData, '身体状况.阴蒂情况'));
+                updateTextValue('condition-urethra', SafeGetValue(characterData, '身体状况.尿道情况'));
+                updateTextValue('condition-anus', SafeGetValue(characterData, '身体状况.菊穴情况'));
+                updateTextValue('vital-temperature', SafeGetValue(characterData, '身体状况.奶头'));
+                updateTextValue('vital-pulse', SafeGetValue(characterData, '身体状况.小穴'));
+                updateTextValue('vital-pressure', SafeGetValue(characterData, '身体状况.尿道'));
+                updateTextValue('vital-anus', SafeGetValue(characterData, '身体状况.菊穴'));
+
+                // 更新任务信息
+                updateTextValue('task-publisher', SafeGetValue(characterData, '当前委托.委托发布者'));
+                updateTextValue('task-name', SafeGetValue(characterData, '当前委托.委托名称'));
+                updateTextValue('task-tags', SafeGetValue(characterData, '当前委托.委托类型'));
+                updateTextValue('task-description', SafeGetValue(characterData, '当前委托.委托内容'));
+                updateTextValue('task-reward', SafeGetValue(characterData, '当前委托.委托报酬'));
+                
+                // 更新行程信息
+                updateTextValue('clinic-name', SafeGetValue(characterData, '行程信息.行程名称'));
+                updateTextValue('clinic-type', SafeGetValue(characterData, '行程信息.行程类型'));
+                updateTextValue('clinic-time', SafeGetValue(characterData, '行程信息.行程时间'));
+                updateTextValue('clinic-content', SafeGetValue(characterData, '行程信息.行程内容'));
+                updateTextValue('clinic-reward', SafeGetValue(characterData, '行程信息.行程报酬'));
+
+            } catch (error) {
+                console.error('状态栏加载出错:', error.message);
+            }
+        }
+
+        let isCollapsed = false;
+
+        function toggleCollapse() {
+            const container = document.getElementById('medical-app');
+            const btn = document.getElementById('collapse-btn');
+            isCollapsed = !isCollapsed;
+            
+            if (isCollapsed) {
+                container.classList.add('collapsed');
+                btn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+            } else {
+                container.classList.remove('collapsed');
+                btn.innerHTML = '<i class="fas fa-chevron-up"></i>';
+            }
+        }
+
+        function switchTab(tabName, event) {
+            // 移除所有active类
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelectorAll('.medical-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // 添加active类到当前选中的标签
+            event.target.closest('.nav-item').classList.add('active');
+            document.getElementById(tabName + '-content').classList.add('active');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // 创建提示元素
+                const toast = document.createElement('div');
+                toast.textContent = '已复制到剪贴板: ' + text.substring(0, 20) + '...';
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: var(--medical-pink);
+                    color: var(--medical-dark-pink);
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                    z-index: 1000;
+                    animation: slideIn 0.3s ease-out;
+                `;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }).catch(function(err) {
+                console.error('复制失败: ', err);
+            });
+        }
+
+        // 切换卡片折叠状态
+        function toggleCard(cardId) {
+            const card = document.getElementById(cardId);
+            if (!card) return;
+            
+            const isCollapsed = card.classList.toggle('card-collapsed');
+            const toggleBtn = card.querySelector('.card-toggle');
+            
+            if (toggleBtn) {
+                toggleBtn.innerHTML = isCollapsed ? 
+                    '<i class="fas fa-chevron-down"></i>' : 
+                    '<i class="fas fa-chevron-up"></i>';
+            }
+        }
+
+        // 初始化显示
+        document.addEventListener('DOMContentLoaded', function() {
+            initDisplay();
+        });
+    </script>
+
+
+</body></html>
+```

@@ -11,8 +11,16 @@ $(async () => {
     for (const [name, data] of Object.entries(candidates)) {
       const fav = _.get(data, '好感度', 0);
       const corr = _.get(data, '堕落值', 0);
-      const rate = _.clamp(Math.round(fav * 0.5 + corr * 0.5), 0, 100);
+      const rate = calcRate(fav as number, corr as number);
       _.set(data, '成功率', rate);
     }
   });
+
+  function calcRate(fav: number, corr: number): number {
+    // 高阶值做基准，低阶值做增幅，增幅随基准靠近100而线性衰减
+    const H = Math.max(fav, corr);
+    const L = Math.min(fav, corr);
+    const bonus = L * (100 - H) / 100;
+    return Math.floor(H + bonus);
+  }
 });

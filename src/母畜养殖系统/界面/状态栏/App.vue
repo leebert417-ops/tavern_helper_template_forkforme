@@ -121,6 +121,9 @@ const shopItems = [
 .panel {
   width: 100%;
   border: 1px solid #c0c0c0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f5f1ec;
   font-size: 13px;
   line-height: 1.4;
   color: #333;
@@ -147,7 +150,7 @@ const shopItems = [
 
 .tabs {
   display: flex;
-  background: #f5f5f5;
+  background: #e6e0d8;
   border-top: 1px solid #c0c0c0;
   border-bottom: 1px solid #c0c0c0;
 
@@ -173,6 +176,7 @@ const shopItems = [
 
 .tab-body {
   padding: 8px 12px;
+  background: #f5f1ec;
 }
 
 .pane {
@@ -189,6 +193,8 @@ const shopItems = [
 
 .card {
   border: 1px solid #e0e0e0;
+  background: #ffffff;
+  border-radius: 4px;
   padding: 6px 10px;
 }
 

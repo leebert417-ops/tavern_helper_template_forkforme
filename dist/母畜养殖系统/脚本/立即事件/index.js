@@ -1,2 +1,2 @@
-$(async()=>{await waitGlobalInitialized('Mvu'),eventOn(Mvu.events.VARIABLE_UPDATE_ENDED,async t=>{const a=Math.floor(100*Math.random());_.set(t,'stat_data.随机数',a);const e=_.get(t,'stat_data.备选母畜',{});for(const[t,a]of Object.entries(e)){const t=_.get(a,'好感度',0),e=_.get(a,'堕落值',0),n=_.clamp(Math.round(.5*t+.5*e),0,100);_.set(a,'成功率',n)}})});
+$(async()=>{function t(t,a){const n=Math.max(t,a),e=Math.min(t,a)*(100-n)/100;return Math.floor(n+e)}await waitGlobalInitialized('Mvu'),eventOn(Mvu.events.VARIABLE_UPDATE_ENDED,async a=>{const n=Math.floor(100*Math.random());_.set(a,'stat_data.随机数',n);const e=_.get(a,'stat_data.备选母畜',{});for(const[a,n]of Object.entries(e)){const a=t(_.get(n,'好感度',0),_.get(n,'堕落值',0));_.set(n,'成功率',a)}})});
 //# sourceMappingURL=index.js.map

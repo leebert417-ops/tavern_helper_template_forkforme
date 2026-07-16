@@ -50,6 +50,22 @@
             "重修稳定剂": {
               "default": 0,
               "type": "number"
+            },
+            "公交车经营许可证": {
+              "default": 0,
+              "type": "number"
+            },
+            "公交车经营保险": {
+              "default": 0,
+              "type": "number"
+            },
+            "性病康复针剂": {
+              "default": 0,
+              "type": "number"
+            },
+            "无害人流丸": {
+              "default": 0,
+              "type": "number"
             }
           }
         }
@@ -147,10 +163,6 @@
           }
         }
       }
-    },
-    "随机数": {
-      "default": 0,
-      "type": "number"
     }
   }
 }

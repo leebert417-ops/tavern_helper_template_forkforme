@@ -11,6 +11,10 @@ export const Schema = z.object({
       转职卡: z.coerce.number().prefault(0),
       重修卡: z.coerce.number().prefault(0),
       重修稳定剂: z.coerce.number().prefault(0),
+      公交车经营许可证: z.coerce.number().prefault(0),
+      公交车经营保险: z.coerce.number().prefault(0),
+      性病康复针剂: z.coerce.number().prefault(0),
+      无害人流丸: z.coerce.number().prefault(0),
     }).prefault({}),
   }).prefault({}),
 
@@ -41,7 +45,6 @@ export const Schema = z.object({
     })
   ).prefault({}),
 
-  随机数: z.coerce.number().prefault(0).transform(v => _.clamp(v, 0, 99)),
 }).prefault({});
 
 export type Schema = z.output<typeof Schema>;

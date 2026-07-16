@@ -87,6 +87,21 @@
     激活概率: 100
     文件: 世界书/检疫判定
 
+  - 名称: 特殊建造
+    启用: true
+    激活策略:
+      类型: 蓝灯
+    插入位置:
+      类型: 指定深度
+      角色: 系统
+      深度: 0
+      顺序: 14720
+    激活概率: 100
+    递归:
+      不可被其他条目激活: true
+      不可激活其他条目: true
+    文件: 世界书/特殊建造
+
   - 名称: 世界观-东海市
     启用: false
     激活策略:
@@ -237,7 +252,7 @@
         ````
         <body>
         <script>
-        $('body').load('https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme/dist/母畜养殖系统/界面/状态栏/index.html')
+        $('body').load('https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme@latest/dist/母畜养殖系统/界面/状态栏/index.html')
         </script>
         </body>
         ````
@@ -255,18 +270,18 @@
         启用: true
         类型: 脚本
         内容: |-
-          import 'https://testingcf.jsdelivr.net/gh/MagicalAstrogy/MagVarUpdate/artifact/bundle.js';
+          import 'https://testingcf.jsdelivr.net/gh/MagicalAstrogy/MagVarUpdate@latest/artifact/bundle.js';
 
       - 名称: 变量结构
         id: schema-001
         启用: true
         类型: 脚本
         内容: |-
-          import 'https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme/dist/母畜养殖系统/脚本/变量结构/index.js';
+          import 'https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme@latest/dist/母畜养殖系统/脚本/变量结构/index.js';
 
       - 名称: 立即事件
         id: event-001
         启用: true
         类型: 脚本
         内容: |-
-          import 'https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme/dist/母畜养殖系统/脚本/立即事件/index.js';
+          import 'https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme@latest/dist/母畜养殖系统/脚本/立即事件/index.js';

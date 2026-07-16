@@ -9,7 +9,7 @@
       - remove
       - move
     - don't update field names starts with `_` as they are readonly, such as `_变量`
-    - do NOT update "随机数" or "备选母畜.*.成功率", these are maintained by system
+    - do NOT update "_本轮随机数" or "备选母畜.*.成功率", these are maintained by system
   format: |-
     <UpdateVariable>
     <Analysis>${IN ENGLISH, no more than 80 words}

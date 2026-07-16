@@ -237,7 +237,7 @@
         ````
         <body>
         <script>
-        $('body').load('https://testingcf.jsdelivr.net/gh/StageDog/tavern_helper_template/dist/母畜养殖系统/界面/状态栏/index.html')
+        $('body').load('https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme/dist/母畜养殖系统/界面/状态栏/index.html')
         </script>
         </body>
         ````
@@ -255,18 +255,18 @@
         启用: true
         类型: 脚本
         内容: |-
-          ${import 'https://testingcf.jsdelivr.net/gh/MagicalAstrogy/MagVarUpdate/artifact/bundle.js';}
+          import 'https://testingcf.jsdelivr.net/gh/MagicalAstrogy/MagVarUpdate/artifact/bundle.js';
 
       - 名称: 变量结构
         id: schema-001
         启用: true
         类型: 脚本
         内容: |-
-          ${import 'https://testingcf.jsdelivr.net/gh/StageDog/tavern_helper_template/dist/母畜养殖系统/脚本/变量结构/index.js';}
+          import 'https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme/dist/母畜养殖系统/脚本/变量结构/index.js';
 
       - 名称: 立即事件
         id: event-001
         启用: true
         类型: 脚本
         内容: |-
-          ${import 'https://testingcf.jsdelivr.net/gh/StageDog/tavern_helper_template/dist/母畜养殖系统/脚本/立即事件/index.js';}
+          import 'https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme/dist/母畜养殖系统/脚本/立即事件/index.js';

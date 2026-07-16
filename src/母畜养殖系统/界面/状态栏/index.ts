@@ -4,5 +4,9 @@ import App from './App.vue';
 $(async () => {
   await waitGlobalInitialized('Mvu');
   await waitUntil(() => _.has(getVariables({ type: 'message' }), 'stat_data'));
-  createApp(App).use(createPinia()).mount('#app');
+
+  const app = createApp(App).use(createPinia());
+  app.mount('#app');
+
+  $(window).on('pagehide', () => app.unmount());
 });

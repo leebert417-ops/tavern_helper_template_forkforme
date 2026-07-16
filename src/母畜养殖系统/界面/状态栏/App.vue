@@ -4,70 +4,78 @@
       <i class="fa" :class="expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
       <span class="header-title">母畜养殖系统</span>
     </div>
-    <div v-if="expanded" class="body">
+
+    <template v-if="expanded">
       <div class="tabs">
-        <button v-for="tab in tabs" :key="tab" @click="activeTab = tab"
-          :class="{ active: activeTab === tab }">{{ tab }}</button>
+        <button
+          v-for="tab in tabs"
+          :key="tab"
+          :class="{ active: activeTab === tab }"
+          @click="activeTab = tab"
+        >{{ tab }}</button>
       </div>
-      <div class="content">
-        <!-- Tab: 目标 -->
-        <div v-if="activeTab === '目标'" class="tab-pane">
-          <div v-if="!candidates.length" class="empty">暂无备选母畜</div>
-          <div v-for="(c, name) in candidates" :key="name" class="card">
-            <div class="card-header">{{ name }} <span class="rating" v-if="c.母畜评级">{{ c.母畜评级 }}</span></div>
-            <div class="row"><span>好感度</span><span>{{ c.好感度 }}</span></div>
-            <div class="row"><span>堕落值</span><span>{{ c.堕落值 }}</span></div>
-            <div class="row"><span>检疫成功率</span><span>{{ c.成功率 }}%</span></div>
+
+      <div class="tab-body">
+        <!-- 目标（备选母畜） -->
+        <div v-show="activeTab === '目标'" class="pane">
+          <div v-if="!candidateCount" class="empty">暂无备选母畜</div>
+          <div v-for="(info, name) in store.data.备选母畜" :key="name" class="card">
+            <div class="card-head">
+              <span class="name">{{ name }}</span>
+              <span v-if="info.母畜评级" class="tag rating">{{ info.母畜评级 }}</span>
+            </div>
+            <div class="kv"><span>好感度</span><span>{{ info.好感度 }}</span></div>
+            <div class="kv"><span>堕落值</span><span>{{ info.堕落值 }}</span></div>
+            <div class="kv"><span>检疫成功率</span><span>{{ info.成功率 }}%</span></div>
           </div>
         </div>
 
-        <!-- Tab: 母畜 -->
-        <div v-if="activeTab === '母畜'" class="tab-pane">
-          <div v-if="!livestock.length" class="empty">暂无母畜</div>
-          <div v-for="(m, name) in livestock" :key="name" class="card">
-            <div class="card-header">
-              {{ name }}
-              <span class="badge" :class="m.类型">{{ m.类型 }}</span>
-              <span class="level">lv.{{ m.等级 }}</span>
+        <!-- 母畜 -->
+        <div v-show="activeTab === '母畜'" class="pane">
+          <div v-if="!livestockCount" class="empty">暂无母畜</div>
+          <div v-for="(info, name) in store.data.母畜" :key="name" class="card">
+            <div class="card-head">
+              <span class="name">{{ name }}</span>
+              <span class="tag type" :class="info.类型">{{ info.类型 }}</span>
+              <span class="level">lv.{{ info.等级 }}</span>
             </div>
-            <div class="row"><span>经验</span><span>{{ m.经验 }}</span></div>
-            <div class="row"><span>自由点数</span><span>{{ m.自由点数 }}</span></div>
-            <div class="attrs">
-              <div class="attr"><label>乳房</label><span>{{ m.乳房 }}</span></div>
-              <div class="attr"><label>臀部</label><span>{{ m.臀部 }}</span></div>
-              <div class="attr"><label>子宫</label><span>{{ m.子宫 }}</span></div>
-              <div class="attr"><label>阴道</label><span>{{ m.阴道 }}</span></div>
-              <div class="attr"><label>肛门</label><span>{{ m.肛门 }}</span></div>
+            <div class="kv"><span>经验</span><span>{{ info.经验 }}</span></div>
+            <div class="kv"><span>自由点数</span><span>{{ info.自由点数 }}</span></div>
+            <div class="stat-grid">
+              <div class="stat"><label>乳房</label><span>{{ info.乳房 }}</span></div>
+              <div class="stat"><label>臀部</label><span>{{ info.臀部 }}</span></div>
+              <div class="stat"><label>子宫</label><span>{{ info.子宫 }}</span></div>
+              <div class="stat"><label>阴道</label><span>{{ info.阴道 }}</span></div>
+              <div class="stat"><label>肛门</label><span>{{ info.肛门 }}</span></div>
             </div>
-            <div class="row" v-if="m.重修次数"><span>重修次数</span><span>{{ m.重修次数 }}</span></div>
+            <div v-if="info.重修次数" class="kv"><span>重修次数</span><span>{{ info.重修次数 }}</span></div>
           </div>
         </div>
 
-        <!-- Tab: 道具 -->
-        <div v-if="activeTab === '道具'" class="tab-pane">
-          <div v-for="(qty, name) in data.主角.道具栏" :key="name" class="row" :class="{ dim: !qty }">
+        <!-- 道具 -->
+        <div v-show="activeTab === '道具'" class="pane">
+          <div v-for="(qty, name) in store.data.主角.道具栏" :key="name" class="kv" :class="{ dim: !qty }">
             <span>{{ itemLabel(name) }}</span><span>{{ qty }}</span>
           </div>
         </div>
 
-        <!-- Tab: 商店 -->
-        <div v-if="activeTab === '商店'" class="tab-pane">
+        <!-- 商店 -->
+        <div v-show="activeTab === '商店'" class="pane">
           <div class="section">
-            <div class="section-title"><i class="fa fa-money"></i> 财务概览</div>
-            <div class="row"><span>母畜币</span><span>{{ data.主角.母畜币 }}</span></div>
-            <div class="row"><span>卡内余额</span><span>&yen;{{ data.主角.联名卡余额 }}<small>（次日4点自动兑换）</small></span></div>
-            <div class="row"><span>卡外资产</span><span>&yen;{{ data.主角.卡外资产 }}</span></div>
+            <div class="section-title"><i class="fa fa-money"></i> 财务</div>
+            <div class="kv"><span>母畜币</span><span>{{ store.data.主角.母畜币 }}</span></div>
+            <div class="kv"><span>联名卡余额</span><span>&yen;{{ store.data.主角.联名卡余额 }} <small>（次日 4:00 自动兑换）</small></span></div>
+            <div class="kv"><span>卡外资产</span><span>&yen;{{ store.data.主角.卡外资产 }}</span></div>
           </div>
           <div class="section">
-            <div class="section-title"><i class="fa fa-shopping-cart"></i> 可购买商品</div>
-            <div v-for="item in shopItems" :key="item.name" class="row">
-              <span>{{ item.name }}</span>
-              <span>{{ item.price }} 母畜币 <small v-if="item.once">（限购一次）</small></span>
+            <div class="section-title"><i class="fa fa-shopping-cart"></i> 商品</div>
+            <div v-for="item in shopItems" :key="item.name" class="kv">
+              <span>{{ item.name }}</span><span>{{ item.price }}</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
@@ -75,15 +83,16 @@
 import { ref, computed } from 'vue';
 import { useDataStore } from './store';
 
-const data = useDataStore();
+const store = useDataStore();
+
 const expanded = ref(false);
 const activeTab = ref('目标');
 const tabs = ['目标', '母畜', '道具', '商店'];
 
-const candidates = computed(() => data.备选母畜 ?? {});
-const livestock = computed(() => data.母畜 ?? {});
+const candidateCount = computed(() => Object.keys(store.data.备选母畜).length);
+const livestockCount = computed(() => Object.keys(store.data.母畜).length);
 
-const itemLabels: Record<string, string> = {
+const itemNames: Record<string, string> = {
   母猪检疫印章: '母猪检疫印章',
   母牛检疫印章: '母牛检疫印章',
   母狗检疫印章: '母狗检疫印章',
@@ -93,20 +102,18 @@ const itemLabels: Record<string, string> = {
   重修稳定剂: '重修稳定剂',
 };
 
-function itemLabel(key: string) {
-  return itemLabels[key] ?? key;
+function itemLabel(key: string): string {
+  return itemNames[key] ?? key;
 }
 
 const shopItems = [
-  { name: '母猪检疫印章', price: 1000, once: true },
-  { name: '母牛检疫印章', price: 1000, once: true },
-  { name: '母狗检疫印章', price: 1000, once: true },
-  { name: '母畜联名卡', price: 0, once: true },
-  { name: '母畜检疫特供印泥', price: '?', once: false },
-  { name: '转职卡', price: '?', once: false },
-  { name: '重修卡', price: '?', once: false },
-  { name: '重修稳定剂', price: '?', once: false },
-  { name: '95软妹币（已扣税）', price: '?', once: false },
+  { name: '母猪检疫印章', price: '1000 母畜币' },
+  { name: '母牛检疫印章', price: '1000 母畜币' },
+  { name: '母狗检疫印章', price: '1000 母畜币' },
+  { name: '母畜检疫特供印泥', price: '?' },
+  { name: '转职卡', price: '?' },
+  { name: '重修卡', price: '?' },
+  { name: '重修稳定剂', price: '?' },
 ];
 </script>
 
@@ -127,20 +134,23 @@ const shopItems = [
   padding: 8px 12px;
   cursor: pointer;
   user-select: none;
-  &:hover { background: rgba(0,0,0,0.03); }
-  .fa { font-size: 12px; width: 14px; }
-  .header-title { font-weight: 600; }
-}
 
-.body {
-  border-top: 1px solid #c0c0c0;
+  &:hover { background: rgba(0, 0, 0, 0.03); }
+
+  .fa {
+    font-size: 12px;
+    width: 14px;
+  }
+
+  .header-title { font-weight: 600; }
 }
 
 .tabs {
   display: flex;
-  gap: 0;
   background: #f5f5f5;
+  border-top: 1px solid #c0c0c0;
   border-bottom: 1px solid #c0c0c0;
+
   button {
     flex: 1;
     padding: 6px 0;
@@ -149,16 +159,23 @@ const shopItems = [
     font-size: 13px;
     cursor: pointer;
     color: #666;
-    &.active { color: #333; font-weight: 600; background: #fff; border-bottom: 2px solid #c00000; }
-    &:hover:not(.active) { background: rgba(0,0,0,0.04); }
+
+    &.active {
+      color: #333;
+      font-weight: 600;
+      background: #fff;
+      border-bottom: 2px solid #c00000;
+    }
+
+    &:hover:not(.active) { background: rgba(0, 0, 0, 0.04); }
   }
 }
 
-.content {
+.tab-body {
   padding: 8px 12px;
 }
 
-.tab-pane {
+.pane {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -173,57 +190,71 @@ const shopItems = [
 .card {
   border: 1px solid #e0e0e0;
   padding: 6px 10px;
-  .card-header {
-    font-weight: 600;
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+
+  .name { font-weight: 600; }
+  .level { font-size: 11px; color: #666; margin-left: auto; }
+}
+
+.tag {
+  font-size: 11px;
+  padding: 0 5px;
+
+  &.rating {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  &.type {
+    color: #fff;
+    &.母猪 { background: #e91e63; }
+    &.母牛 { background: #795548; }
+    &.母狗 { background: #ff9800; }
   }
 }
 
-.rating {
-  font-size: 11px;
-  background: #fff3cd;
-  color: #856404;
-  padding: 0 4px;
-}
-
-.badge {
-  font-size: 11px;
-  padding: 0 5px;
-  border-radius: 3px;
-  color: #fff;
-  &.母猪 { background: #e91e63; }
-  &.母牛 { background: #795548; }
-  &.母狗 { background: #ff9800; }
-}
-
-.level {
-  font-size: 11px;
-  color: #666;
-  margin-left: auto;
-}
-
-.row {
+.kv {
   display: flex;
   justify-content: space-between;
   padding: 3px 0;
   border-bottom: 1px solid #f0f0f0;
+
   &:last-child { border-bottom: none; }
-  small { color: #999; font-size: 11px; margin-left: 4px; }
+
+  small {
+    color: #999;
+    font-size: 11px;
+    margin-left: 4px;
+  }
+
   &.dim { opacity: 0.4; }
 }
 
-.attrs {
+.stat-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 4px;
   padding: 4px 0;
-  .attr {
+
+  .stat {
     text-align: center;
-    label { display: block; font-size: 10px; color: #888; }
-    span { font-size: 13px; font-weight: 500; }
+
+    label {
+      display: block;
+      font-size: 10px;
+      color: #888;
+    }
+
+    span {
+      font-size: 13px;
+      font-weight: 500;
+    }
   }
 }
 
@@ -234,8 +265,10 @@ const shopItems = [
     margin-bottom: 4px;
     padding-bottom: 4px;
     border-bottom: 1px solid #ddd;
+
     .fa { margin-right: 4px; }
   }
+
   & + & { margin-top: 10px; }
 }
 </style>

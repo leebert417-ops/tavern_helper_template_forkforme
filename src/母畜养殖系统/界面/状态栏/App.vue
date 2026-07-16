@@ -110,10 +110,11 @@ const shopItems = [
   { name: '母猪检疫印章', price: '1000 母畜币' },
   { name: '母牛检疫印章', price: '1000 母畜币' },
   { name: '母狗检疫印章', price: '1000 母畜币' },
-  { name: '母畜检疫特供印泥', price: '?' },
-  { name: '转职卡', price: '?' },
-  { name: '重修卡', price: '?' },
-  { name: '重修稳定剂', price: '?' },
+  { name: '母畜检疫特供印泥', price: '5 母畜币' },
+  { name: '转职卡', price: '30 母畜币' },
+  { name: '重修卡', price: '60 母畜币' },
+  { name: '重修稳定剂', price: '15 母畜币' },
+  { name: '95软妹币（已扣税）', price: '1 母畜币' },
 ];
 </script>
 

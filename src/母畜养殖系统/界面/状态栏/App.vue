@@ -1,9 +1,9 @@
-﻿<template>
+<template>
   <div class="panel">
     <div class="header" @click="expanded = !expanded">
       <i class="fa" :class="expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
       <i class="fa fa-pagelines header-icon"></i>
-      <span class="header-title">母畜养殖系统</span>
+      <span class="header-title">母畜养殖系统</span><span class="header-coin"><i class="fa fa-circle"></i> {{ store.data.主角.母畜币 }}</span>
     </div>
 
     <transition name="slide">
@@ -22,6 +22,40 @@
 
         <transition name="fade" mode="out-in">
           <div class="tab-body" :key="activeTab">
+
+            <!-- 基础 -->
+            <div v-if="activeTab === 'basic'" class="pane">
+              <div class="section">
+                <div class="section-title"><i class="fa fa-wrench"></i> 可用技能</div>
+                <div class="skill-card" v-for="skill in skills" :key="skill.name" :class="{ disabled: !skill.available }">
+                  <div class="skill-head">
+                    <i class="fa" :class="skill.icon"></i>
+                    <span class="skill-name">{{ skill.name }}</span>
+                    <span v-if="!skill.available" class="tag unavailable">不可用</span>
+                    <span v-else class="tag available">可用</span>
+                  </div>
+                  <div class="skill-desc">{{ skill.desc }}</div>
+                  <div v-if="skill.cost" class="skill-cost"><i class="fa fa-circle"></i> {{ skill.cost }}</div>
+                </div>
+              </div>
+              <div class="section">
+                <div class="section-title"><i class="fa fa-home"></i> 特殊建造</div>
+                <div v-if="!roomCount" class="kv dim"><span>暂无已建房间</span><span class="val">—</span></div>
+                <div class="kv" v-for="(info, name) in store.data.主角.特殊建造" :key="name">
+                  <span><i class="fa" :class="roomIcon(String(name))"></i> {{ name }}</span>
+                  <span class="val">{{ info.面积 }} m²</span>
+                </div>
+                <div v-if="roomCount" class="room-loc" v-for="(info, name) in store.data.主角.特殊建造" :key="'loc-'+name">
+                  <span class="loc-label">位置</span><span>{{ info.位置 }}</span>
+                </div>
+              </div>
+              <div class="section">
+                <div class="section-title"><i class="fa fa-money"></i> 资产</div>
+                <div class="kv"><span>联名卡余额</span><span class="val">&yen;{{ store.data.主角.联名卡余额.toLocaleString() }}</span><small class="hint">次日 4:00 自动兑换</small></div>
+                <div class="kv"><span>卡外资产</span><span class="val">&yen;{{ store.data.主角.卡外资产.toLocaleString() }}</span></div>
+              </div>
+            </div>
+
             <!-- 目标（备选母畜） -->
             <div v-if="activeTab === 'target'" class="pane">
               <div v-if="!candidateCount" class="empty">
@@ -93,12 +127,6 @@
             <!-- 商店 -->
             <div v-if="activeTab === 'shop'" class="pane">
               <div class="section">
-                <div class="section-title"><i class="fa fa-money"></i> 财务</div>
-                <div class="kv"><span>母畜币</span><span class="val primary">{{ store.data.主角.母畜币 }}</span></div>
-                <div class="kv"><span>联名卡余额</span><span class="val">&yen;{{ store.data.主角.联名卡余额 }}</span><small class="hint">次日 4:00 自动兑换</small></div>
-                <div class="kv"><span>卡外资产</span><span class="val">&yen;{{ store.data.主角.卡外资产 }}</span></div>
-              </div>
-              <div class="section">
                 <div class="section-title"><i class="fa fa-shopping-cart"></i> 一次性购买</div>
                 <div class="shop-item" v-for="item in oneTimeItems" :key="item.name">
                   <div class="shop-name">{{ item.name }}</div>
@@ -124,15 +152,16 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useDataStore } from './store';
+import { useDataStore } from '../store';
 
 const store = useDataStore();
 
 const expanded = ref(false);
-const activeTab = ref('target');
+const activeTab = ref('basic');
 
 const tabs = [
-  { key: 'target', label: '目标', icon: 'fa-crosshairs' },
+    { key: 'basic', label: '基础', icon: 'fa-home' },
+    { key: 'target', label: '目标', icon: 'fa-crosshairs' },
   { key: 'livestock', label: '母畜', icon: 'fa-paw' },
   { key: 'items', label: '道具', icon: 'fa-briefcase' },
   { key: 'shop', label: '商店', icon: 'fa-shopping-basket' },
@@ -149,6 +178,36 @@ const statKeys = [
 const candidateCount = computed(() => Object.keys(store.data.备选母畜).length);
 const activeLivestock = computed(() => Object.fromEntries(Object.entries(store.data.母畜).filter(([_, v]) => v.是否母畜化)));
 const livestockCount = computed(() => Object.keys(activeLivestock.value).length);
+
+// 基础 tab
+const roomCount = computed(() => Object.keys(store.data.主角.特殊建造).length);
+
+
+const skills = computed(() => {
+  const { 道具栏, 母畜币 } = store.data.主角;
+  const hasStamp = 道具栏.母猪检疫印章 > 0 || 道具栏.母牛检疫印章 > 0 || 道具栏.母狗检疫印章 > 0;
+  const hasInk = 道具栏.母畜检疫特供印泥 > 0;
+  const hasLivestock = livestockCount.value > 0;
+
+  return [
+    { name: '母畜鉴定', icon: 'fa-search', desc: '鉴定指定母畜的详细属性信息', cost: '1 母畜币', available: 母畜币 >= 1 },
+    { name: '母畜检疫', icon: 'fa-stamp', desc: '对备选母畜发起检疫，成功后转化为母畜', cost: '1 印泥', available: hasStamp && hasInk },
+    { name: '特殊建造', icon: 'fa-building', desc: '花费母畜币将封闭空间改造为特殊功能房间', cost: '1~8 母畜币/m²', available: 母畜币 >= 1 },
+    { name: '远程指挥', icon: 'fa-bullhorn', desc: '母畜遭遇危险时远程下达命令', cost: null, available: hasLivestock },
+  ];
+});
+
+function roomIcon(roomType: string): string {
+  const icons: Record<string, string> = {
+    爱欲房间: 'fa-heart',
+    繁育室: 'fa-child',
+    育儿室: 'fa-graduation-cap',
+    榨乳室: 'fa-tint',
+    改造室: 'fa-wrench',
+    接待室: 'fa-door-open',
+  };
+  return icons[roomType] ?? 'fa-home';
+}
 
 function itemLabel(key: string): string {
   const names: Record<string, string> = {
@@ -270,6 +329,7 @@ const repeatItems = [
   }
   .header-icon { color: #c00000; font-size: 15px; }
   .header-title { font-weight: 700; font-size: 14px; }
+  .header-coin { margin-left: auto; font-weight: 600; font-size: 12px; color: #c00000; display: flex; align-items: center; gap: 4px; .fa-circle { font-size: 8px; } }
 }
 
 // Tabs
@@ -503,6 +563,54 @@ const repeatItems = [
     .fa { margin-right: 4px; color: #c00000; width: 14px; }
   }
   & + & { margin-top: 14px; }
+}
+
+
+// Skill cards
+.skill-card {
+  padding: 8px 12px;
+  border: 1px solid #e0d8cf;
+  border-radius: 5px;
+  background: #ffffff;
+  margin-bottom: 6px;
+
+  &:last-child { margin-bottom: 0; }
+  &.disabled { opacity: 0.45; .skill-head .fa { color: #999; } }
+
+  .skill-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+
+    .fa { color: #c00000; font-size: 13px; }
+    .skill-name { font-weight: 600; font-size: 13px; }
+  }
+  .skill-desc { font-size: 11px; color: #8c8279; padding-left: 19px; }
+  .skill-cost {
+    font-size: 10px;
+    color: #c00000;
+    font-weight: 500;
+    padding-left: 19px;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    .fa-circle { font-size: 7px; }
+  }
+}
+
+.tag.available { background: #e8f5e9; color: #2e7d32; }
+.tag.unavailable { background: #fce4ec; color: #c62828; }
+
+.room-loc {
+  font-size: 11px;
+  color: #8c8279;
+  padding: 0 0 0 6px;
+  display: flex;
+  gap: 6px;
+
+  .loc-label { color: #b0a69e; flex-shrink: 0; }
 }
 
 // Transitions

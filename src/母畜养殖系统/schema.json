@@ -68,6 +68,27 @@
               "type": "number"
             }
           }
+        },
+        "特殊建造": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "description": "房间类型"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "位置": {
+                "default": "",
+                "type": "string"
+              },
+              "面积": {
+                "default": 0,
+                "type": "number"
+              }
+            }
+          }
         }
       }
     },

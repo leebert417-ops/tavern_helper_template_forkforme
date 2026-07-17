@@ -16,6 +16,13 @@ export const Schema = z.object({
       性病康复针剂: z.coerce.number().prefault(0),
       无害人流丸: z.coerce.number().prefault(0),
     }).prefault({}),
+    特殊建造: z.record(
+      z.string().describe('房间类型'),
+      z.object({
+        位置: z.string().prefault(''),
+        面积: z.coerce.number().prefault(0),
+      })
+    ).prefault({}),
   }).prefault({}),
 
   母畜: z.record(

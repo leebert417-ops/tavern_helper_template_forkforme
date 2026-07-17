@@ -102,6 +102,21 @@
       不可激活其他条目: true
     文件: 世界书/特殊建造
 
+  - 名称: 前置剧情
+    启用: true
+    激活策略:
+      类型: 蓝灯
+    插入位置:
+      类型: 指定深度
+      角色: 系统
+      深度: 0
+      顺序: 14720
+    激活概率: 100
+    递归:
+      不可被其他条目激活: true
+      不可激活其他条目: true
+    文件: 世界书/前置剧情
+
   - 名称: 世界观-东海市
     启用: false
     激活策略:
@@ -131,6 +146,99 @@
       不可被其他条目激活: true
       不可激活其他条目: true
     文件: 世界书/角色/东海市配套主角（选开）
+
+  - 文件夹: 角色
+    条目:
+      - 名称: 温若慈
+        启用: true
+        激活策略:
+          类型: 绿灯
+          关键字:
+            - 温若慈
+            - 温姐
+            - 温主管
+            - 前主管
+            - 方志国
+            - 产假
+        插入位置:
+          类型: 指定深度
+          角色: 系统
+          深度: 0
+          顺序: 14720
+        激活概率: 100
+        文件: 世界书/角色/温若慈
+
+      - 名称: 柳如烟
+        启用: true
+        激活策略:
+          类型: 绿灯
+          关键字:
+            - 柳如烟
+            - 如烟
+            - 女主管
+            - 空降
+            - 新主管
+            - 苏政元
+            - 大领导
+        插入位置:
+          类型: 指定深度
+          角色: 系统
+          深度: 0
+          顺序: 14720
+        激活概率: 100
+        文件: 世界书/角色/柳如烟
+
+      - 名称: 杨素素
+        启用: false
+        激活策略:
+          类型: 绿灯
+          关键字:
+            - 杨素素
+            - 社会你素姐
+            - 麻酥酥
+            - 女权大V
+            - 素姐
+        插入位置:
+          类型: 指定深度
+          角色: 系统
+          深度: 0
+          顺序: 14720
+        激活概率: 100
+        文件: 世界书/角色/杨素素
+
+      - 名称: 刘奈妲
+        启用: true
+        激活策略:
+          类型: 绿灯
+          关键字:
+            - 刘奈妲
+            - 奈妲
+            - 刘姐
+            - 美容院
+        插入位置:
+          类型: 指定深度
+          角色: 系统
+          深度: 0
+          顺序: 14720
+        激活概率: 100
+        文件: 世界书/角色/刘奈妲
+
+      - 名称: 常芳宁
+        启用: true
+        激活策略:
+          类型: 绿灯
+          关键字:
+            - 常芳宁
+            - 芳宁
+            - 常姐
+            - 临仙
+        插入位置:
+          类型: 指定深度
+          角色: 系统
+          深度: 0
+          顺序: 14720
+        激活概率: 100
+        文件: 世界书/角色/常芳宁
 
   - 文件夹: 变量
     条目:
@@ -243,7 +351,6 @@
         仅格式显示: true
         仅格式提示词: false
 
-
     - 正则名称: '[界面]前端界面状态栏'
       id: ui-status-001
       启用: true
@@ -252,7 +359,7 @@
         ````
         <body>
         <script>
-        $('body').load('https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme@latest/dist/母畜养殖系统/界面/状态栏/index.html')
+        $('body').load('https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme@main/dist/母畜养殖系统/界面/状态栏/index.html')
         </script>
         </body>
         ````
@@ -270,18 +377,18 @@
         启用: true
         类型: 脚本
         内容: |-
-          import 'https://testingcf.jsdelivr.net/gh/MagicalAstrogy/MagVarUpdate@latest/artifact/bundle.js';
+          import 'https://testingcf.jsdelivr.net/gh/MagicalAstrogy/MagVarUpdate/artifact/bundle.js';
 
       - 名称: 变量结构
         id: schema-001
         启用: true
         类型: 脚本
         内容: |-
-          import 'https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme@latest/dist/母畜养殖系统/脚本/变量结构/index.js';
+          import 'https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme@main/dist/母畜养殖系统/脚本/变量结构/index.js';
 
       - 名称: 立即事件
         id: event-001
         启用: true
         类型: 脚本
         内容: |-
-          import 'https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme@latest/dist/母畜养殖系统/脚本/立即事件/index.js';
+          import 'https://testingcf.jsdelivr.net/gh/leebert417-ops/tavern_helper_template_forkforme@main/dist/母畜养殖系统/脚本/立即事件/index.js';

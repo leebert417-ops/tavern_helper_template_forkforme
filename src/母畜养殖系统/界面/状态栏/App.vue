@@ -318,19 +318,22 @@ const repeatItems = [
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-height: 100%;
 }
 
 // Empty state
 .empty {
-  text-align: center;
-  color: #b0a69e;
-  padding: 20px 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+ text-align: center;
+ color: #b0a69e;
+ padding: 20px 0;
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ gap: 4px;
+  justify-content: center;
+  flex: 1;
 
-  .empty-icon { font-size: 24px; opacity: 0.4; }
+ .empty-icon { font-size: 24px; opacity: 0.4; }
   .empty-hint { font-size: 11px; opacity: 0.6; margin-top: 2px; }
 }
 

@@ -308,7 +308,7 @@ const repeatItems = [
 .tab-body {
   padding: 10px 14px;
   min-height: 60px;
-  max-height: 360px;
+  height: 360px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #c8c0b8 #f7f3ed;

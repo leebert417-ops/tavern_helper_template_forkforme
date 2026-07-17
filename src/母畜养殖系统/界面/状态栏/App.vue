@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="panel">
     <div class="header" @click="expanded = !expanded">
       <i class="fa" :class="expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
@@ -308,6 +308,10 @@ const repeatItems = [
 .tab-body {
   padding: 10px 14px;
   min-height: 60px;
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #c8c0b8 #f7f3ed;
 }
 
 .pane {

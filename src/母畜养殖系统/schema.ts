@@ -23,6 +23,9 @@ export const Schema = z.object({
         面积: z.coerce.number().prefault(0),
       })
     ).prefault({}),
+    已购道具: z.object({
+      母畜联名卡: z.boolean().prefault(false),
+    }).prefault({}),
   }).prefault({}),
 
   母畜: z.record(

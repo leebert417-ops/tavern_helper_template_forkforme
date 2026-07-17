@@ -89,6 +89,16 @@
               }
             }
           }
+        },
+        "已购道具": {
+          "default": {},
+          "type": "object",
+          "properties": {
+            "母畜联名卡": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
         }
       }
     },

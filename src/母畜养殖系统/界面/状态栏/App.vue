@@ -3,7 +3,7 @@
     <div class="header" @click="expanded = !expanded">
       <i class="fa" :class="expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
       <i class="fa fa-pagelines header-icon"></i>
-      <span class="header-title">母畜养殖系统</span><span class="header-coin"><i class="fa fa-circle"></i> {{ store.data.主角.母畜币 }}</span>
+      <span class="header-title">母畜养殖系统</span><span class="header-coin"><i class="fa fa-circle"></i> {{ store.data.主角.母畜币 }} 母畜币</span>
     </div>
 
     <transition name="slide">
@@ -25,7 +25,11 @@
 
             <!-- 基础 -->
             <div v-if="activeTab === 'basic'" class="pane">
-              <div class="section">
+                            <div class="section">
+                <div class="section-title"><i class="fa fa-money"></i> 资产</div>
+                <div class="kv"><span>联名卡余额</span><span class="val">&yen;{{ store.data.主角.联名卡余额.toLocaleString() }}</span><small class="hint">次日 4:00 自动兑换</small></div>
+                <div class="kv"><span>卡外资产</span><span class="val">&yen;{{ store.data.主角.卡外资产.toLocaleString() }}</span></div>
+              </div><div class="section">
                 <div class="section-title"><i class="fa fa-wrench"></i> 可用技能</div>
                 <div class="skill-card" v-for="skill in skills" :key="skill.name" :class="{ disabled: !skill.available }">
                   <div class="skill-head">
@@ -49,11 +53,7 @@
                   <span class="loc-label">位置</span><span>{{ info.位置 }}</span>
                 </div>
               </div>
-              <div class="section">
-                <div class="section-title"><i class="fa fa-money"></i> 资产</div>
-                <div class="kv"><span>联名卡余额</span><span class="val">&yen;{{ store.data.主角.联名卡余额.toLocaleString() }}</span><small class="hint">次日 4:00 自动兑换</small></div>
-                <div class="kv"><span>卡外资产</span><span class="val">&yen;{{ store.data.主角.卡外资产.toLocaleString() }}</span></div>
-              </div>
+
             </div>
 
             <!-- 目标（备选母畜） -->
@@ -124,22 +124,23 @@
               </div>
             </div>
 
+
             <!-- 商店 -->
             <div v-if="activeTab === 'shop'" class="pane">
-              <div class="section">
-                <div class="section-title"><i class="fa fa-shopping-cart"></i> 一次性购买</div>
-                <div class="shop-item" v-for="item in oneTimeItems" :key="item.name">
-                  <div class="shop-name">{{ item.name }}</div>
-                  <div class="shop-price">{{ item.price }}</div>
-                  <div class="shop-desc">{{ item.desc }}</div>
-                </div>
-              </div>
-              <div class="section">
-                <div class="section-title"><i class="fa fa-repeat"></i> 可重复购买</div>
-                <div class="shop-item" v-for="item in repeatItems" :key="item.name">
-                  <div class="shop-name">{{ item.name }}</div>
-                  <div class="shop-price">{{ item.price }}</div>
-                  <div class="shop-desc">{{ item.desc }}</div>
+              <div class="shop-grid">
+                <div
+                  v-for="item in shopItems"
+                  :key="item.id"
+                  class="shop-card"
+                  :class="{ disabled: item.once && isShopItemPurchased(item.id) }"
+                  @click="!item.once || !isShopItemPurchased(item.id) ? openShopDetail(item) : undefined"
+                >
+                  <div class="shop-card-icon"><i class="fa" :class="item.icon"></i></div>
+                  <div class="shop-card-name">{{ item.name }}</div>
+                  <div class="shop-card-price"><i class="fa fa-circle"></i> {{ item.price }}</div>
+                  <div v-if="item.once && isShopItemPurchased(item.id)" class="shop-card-overlay">
+                    <i class="fa fa-check-circle"></i>
+                  </div>
                 </div>
               </div>
             </div>
@@ -147,7 +148,26 @@
         </transition>
       </div>
     </transition>
+
   </div>
+
+  <!-- 商品详情弹窗 -->
+  <transition name="fade">
+    <div v-if="selectedItem" class="shop-modal-backdrop" @click.self="selectedItem = null">
+      <div class="shop-modal">
+        <div class="shop-modal-icon"><i class="fa" :class="selectedItem.icon"></i></div>
+        <div class="shop-modal-name">{{ selectedItem.name }}</div>
+        <div class="shop-modal-price"><i class="fa fa-circle"></i> {{ selectedItem.price }} 母畜币</div>
+        <div class="shop-modal-desc">{{ selectedItem.desc }}</div>
+        <div v-if="!selectedItem.once && selectedItem.invKey" class="shop-modal-qty">
+          当前持有: {{ store.data.主角.道具栏[selectedItem.invKey] || 0 }}
+        </div>
+        <button class="shop-modal-close" @click="selectedItem = null">
+          <i class="fa fa-times"></i> 关闭
+        </button>
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script setup lang="ts">
@@ -276,13 +296,47 @@ function statLevelClass(val: number): string {
   return '';
 }
 
-// 商店数据
-const oneTimeItems = [
-  { name: '母猪检疫印章', price: '1,000 币', desc: '每用户限购一张' },
-  { name: '母牛检疫印章', price: '1,000 币', desc: '每用户限购一张' },
-  { name: '母狗检疫印章', price: '1,000 币', desc: '每用户限购一张' },
-  { name: '母畜联名卡', price: '0 币', desc: '与农业银行联名借记卡' },
+
+const selectedItem = ref<ShopItem | null>(null);
+
+interface ShopItem {
+  id: string;
+  name: string;
+  price: number;
+  once: boolean;
+  icon: string;
+  desc: string;
+  invKey?: string;
+}
+
+const shopItems: ShopItem[] = [
+  { id: '母猪检疫印章', name: '母猪检疫印章', price: 1000, once: true, icon: 'fa-stamp', desc: '执行母畜检疫的印章，母猪版。每用户仅限购一张。', invKey: '母猪检疫印章' },
+  { id: '母牛检疫印章', name: '母牛检疫印章', price: 1000, once: true, icon: 'fa-stamp', desc: '执行母畜检疫的印章，母牛版。每用户仅限购一张。', invKey: '母牛检疫印章' },
+  { id: '母狗检疫印章', name: '母狗检疫印章', price: 1000, once: true, icon: 'fa-stamp', desc: '执行母畜检疫的印章，母狗版。每用户仅限购一张。', invKey: '母狗检疫印章' },
+  { id: '母畜联名卡', name: '母畜联名卡', price: 0, once: true, icon: 'fa-credit-card', desc: '与农业银行联名的借记卡，兼具正常借记卡全部功能。免费领取。', invKey: undefined },
+  { id: '母畜检疫特供印泥', name: '检疫特供印泥', price: 5, once: false, icon: 'fa-tint', desc: '与检疫印章配合使用的消耗品，每次检疫消耗一份。用后紫色消失只剩白色棉垫。', invKey: '母畜检疫特供印泥' },
+  { id: '转职卡', name: '转职卡', price: 30, once: false, icon: 'fa-exchange', desc: '对指定母畜使用，使其在母猪/母牛/母狗三种类型之间转化。消耗品，单只母畜单次使用。', invKey: '转职卡' },
+  { id: '重修卡', name: '重修卡', price: 60, once: false, icon: 'fa-refresh', desc: '使指定母畜回到 lv.0，已加点的属性效果保留，可重新升级获取自由点数。消耗品。', invKey: '重修卡' },
+  { id: '重修稳定剂', name: '重修稳定剂', price: 15, once: false, icon: 'fa-shield', desc: '配合重修道具使用，降低重修时脱离母畜化的风险。可与重修道具叠加使用。', invKey: '重修稳定剂' },
+  { id: '公交车经营许可证', name: '公交车经营许可证', price: 20, once: false, icon: 'fa-bus', desc: '颁发给任意母狗后，该母狗会自主寻找客户卖淫，所有嫖资上交宿主。一次性，颁发后有效。', invKey: '公交车经营许可证' },
+  { id: '公交车经营保险', name: '公交车经营保险', price: 20, once: false, icon: 'fa-shield', desc: '为持有许可证的母狗提供保护，使其免疫性病且内射不怀孕。预防性道具，已孕或已感染无效。', invKey: '公交车经营保险' },
+  { id: '性病康复针剂', name: '性病康复针剂', price: 10, once: false, icon: 'fa-medkit', desc: '注射后痊愈所有性病。一次性，对所有人可用。', invKey: '性病康复针剂' },
+  { id: '无害人流丸', name: '无害人流丸', price: 5, once: false, icon: 'fa-medkit', desc: '塞入怀孕者子宫后无伤害完成流产。一次性，对所有人可用。', invKey: '无害人流丸' },
+  { id: '98软妹币', name: '98软妹币（已扣税）', price: 1, once: false, icon: 'fa-money', desc: '以母畜币兑换为RMB，到账至联名卡余额。到账后请在次日凌晨4点前取出。', invKey: undefined },
 ];
+
+function isShopItemPurchased(id: string): boolean {
+  const items = store.data.主角.道具栏;
+  if (id === '母畜联名卡') return store.data.主角.已购道具.母畜联名卡;
+  if (id === '母猪检疫印章') return items.母猪检疫印章 > 0;
+  if (id === '母牛检疫印章') return items.母牛检疫印章 > 0;
+  if (id === '母狗检疫印章') return items.母狗检疫印章 > 0;
+  return false;
+}
+
+function openShopDetail(item: ShopItem) {
+  selectedItem.value = item;
+}
 
 const repeatItems = [
   { name: '母畜检疫特供印泥', price: '5 币', desc: '每次检疫消耗一份' },
@@ -611,6 +665,152 @@ const repeatItems = [
   gap: 6px;
 
   .loc-label { color: #b0a69e; flex-shrink: 0; }
+}
+
+
+// Shop grid
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.shop-card {
+  position: relative;
+  border: 1px solid #e0d8cf;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 10px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s, opacity 0.15s;
+  overflow: hidden;
+
+  &:hover:not(.disabled) {
+    border-color: #c00000;
+    box-shadow: 0 2px 8px rgba(192, 0, 0, 0.12);
+    transform: translateY(-1px);
+  }
+
+  &.disabled {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .shop-card-icon {
+    font-size: 22px;
+    color: #c00000;
+    margin-bottom: 4px;
+    .fa-stamp { color: #5d4037; }
+  }
+
+  .shop-card-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #3a322e;
+    margin-bottom: 3px;
+    line-height: 1.3;
+  }
+
+  .shop-card-price {
+    font-size: 11px;
+    color: #c00000;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+
+    .fa-circle { font-size: 7px; }
+  }
+
+  .shop-card-overlay {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 16px;
+    color: #2e7d32;
+    opacity: 0.9;
+  }
+}
+
+// Shop modal
+.shop-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.shop-modal {
+  background: #faf7f2;
+  border: 1px solid #c8c0b8;
+  border-radius: 8px;
+  padding: 20px 24px;
+  max-width: 300px;
+  width: 85%;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+  .shop-modal-icon {
+    font-size: 36px;
+    color: #c00000;
+    margin-bottom: 8px;
+  }
+
+  .shop-modal-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: #3a322e;
+    margin-bottom: 6px;
+  }
+
+  .shop-modal-price {
+    font-size: 13px;
+    color: #c00000;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    .fa-circle { font-size: 8px; }
+  }
+
+  .shop-modal-desc {
+    font-size: 12px;
+    color: #6b625b;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .shop-modal-qty {
+    font-size: 12px;
+    color: #2e7d32;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .shop-modal-close {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 18px;
+    border: 1px solid #c8c0b8;
+    border-radius: 4px;
+    background: #f7f3ed;
+    color: #5a524a;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover { background: #ebe4da; }
+    .fa { font-size: 11px; }
+  }
 }
 
 // Transitions
